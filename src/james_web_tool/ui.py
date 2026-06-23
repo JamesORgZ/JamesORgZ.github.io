@@ -338,7 +338,18 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
         login_btn.click(
             do_login,
             inputs=[pin, remember_admin],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, login_form],
+            outputs=[
+                login_status,
+                session_user_id,
+                session_is_admin,
+                current_user,
+                admin_panel,
+                admin_status,
+                users,
+                admin_memory,
+                login_form,
+                authenticated_area,
+            ],
         )
 
         def restore_saved_admin(memory: dict | None):
@@ -349,7 +360,18 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
         app.load(
             restore_saved_admin,
             inputs=[admin_memory],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, login_form],
+            outputs=[
+                login_status,
+                session_user_id,
+                session_is_admin,
+                current_user,
+                admin_panel,
+                admin_status,
+                users,
+                admin_memory,
+                login_form,
+                authenticated_area,
+            ],
         )
 
         def forget_saved_admin():
@@ -358,7 +380,18 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
         forget_admin_btn.click(
             forget_saved_admin,
             inputs=[],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, login_form],
+            outputs=[
+                login_status,
+                session_user_id,
+                session_is_admin,
+                current_user,
+                admin_panel,
+                admin_status,
+                users,
+                admin_memory,
+                login_form,
+                authenticated_area,
+            ],
         )
 
         tts_engine.change(voice_dropdown_for_engine, inputs=[tts_engine], outputs=[voice])
