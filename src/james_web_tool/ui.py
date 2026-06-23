@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import gradio as gr
 
@@ -112,6 +112,25 @@ def updated_free_usage_or_error(usage: dict | None, today: str | None = None) ->
     if count >= 3:
         raise ValueError("Free tool limit is 3 times / day. Please upgrade to VIP for unlimited jobs.")
     return {"date": current_day, "count": count + 1}
+
+
+def remaining_days_text(plan_tier: str, expires_at: str | None, now: datetime | None = None) -> str:
+    if plan_tier == PlanTier.LIFETIME.value or not expires_at:
+        return "ကျန်ရက်: Lifetime"
+    current = now or datetime.now(timezone.utc)
+    expires = datetime.fromisoformat(expires_at)
+    remaining = expires - current
+    if remaining.total_seconds() <= 0:
+        return "ကျန်ရက်: Expired"
+    days = remaining.days
+    hours = remaining.seconds // 3600
+    if hours:
+        return f"ကျန်ရက်: {days} days {hours} hours"
+    return f"ကျန်ရက်: {days} days"
+
+
+def user_status_text(user_id: str, plan_tier: str, expires_at: str | None, now: datetime | None = None) -> str:
+    return f"Logged in: {user_id} • {plan_tier} • {remaining_days_text(plan_tier, expires_at, now=now)}"
 
 
 def voice_dropdown_for_engine(engine: str):
@@ -293,7 +312,12 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
             if not result.ok:
                 return result.message, "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}
             admin_text = "Admin panel ready." if result.is_admin else "Admin login required."
-            user_text = f"Logged in: {result.user_id} • {result.plan_tier.value}"
+            user = get_user_by_pin(db_path, pin_value.strip()) if not result.is_admin else None
+            user_text = (
+                "Logged in: ADMIN • LIFETIME • ကျန်ရက်: Lifetime"
+                if result.is_admin
+                else user_status_text(result.user_id, result.plan_tier.value, user.get("expires_at") if user else None)
+            )
             memory = remember_admin_payload(result.is_admin, remember_value)
             return (
                 result.message,

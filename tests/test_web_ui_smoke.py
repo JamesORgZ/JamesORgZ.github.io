@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from james_web_tool.ui import build_app
 from james_web_tool import ui
 
@@ -127,3 +129,44 @@ def test_free_usage_resets_on_new_day():
     updated = ui.updated_free_usage_or_error(usage, today="2026-06-23")
 
     assert updated == {"date": "2026-06-23", "count": 1}
+
+
+def test_remaining_days_text_shows_days_hours_and_lifetime():
+    now = datetime(2026, 6, 23, 10, 0, tzinfo=timezone.utc)
+    expires = (now + timedelta(days=29, hours=3)).isoformat()
+
+    assert ui.remaining_days_text("VIP", expires, now=now) == "ကျန်ရက်: 29 days 3 hours"
+    assert ui.remaining_days_text("LIFETIME", None, now=now) == "ကျန်ရက်: Lifetime"
+    assert ui.remaining_days_text("VIP", (now - timedelta(minutes=1)).isoformat(), now=now) == "ကျန်ရက်: Expired"
+
+
+def test_user_status_text_includes_remaining_days():
+    now = datetime(2026, 6, 23, 10, 0, tzinfo=timezone.utc)
+    expires = (now + timedelta(days=30)).isoformat()
+
+    text = ui.user_status_text("J-TEST", "VIP", expires, now=now)
+
+    assert text == "Logged in: J-TEST • VIP • ကျန်ရက်: 30 days"
+
+
+def test_login_handler_display_includes_remaining_days(tmp_path, monkeypatch):
+    monkeypatch.setenv("JAMES_WEB_DATA_DIR", str(tmp_path))
+    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    from james_web_tool.database import create_user, init_db
+    from james_web_tool.models import PlanTier
+
+    db_path = tmp_path / "james_web_tool.sqlite3"
+    init_db(db_path)
+    create_user(db_path, pin="246810", plan_tier=PlanTier.VIP, expires_at=expires)
+
+    app = build_app()
+    login_dependency = next(
+        dep
+        for dep in app.fns.values()
+        if getattr(dep.fn, "__name__", "") == "do_login"
+    )
+
+    outputs = login_dependency.fn("246810", False)
+
+    assert "VIP" in outputs[3]
+    assert "ကျန်ရက်:" in outputs[3]
