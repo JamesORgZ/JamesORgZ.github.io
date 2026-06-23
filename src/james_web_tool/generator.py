@@ -19,12 +19,21 @@ from .tts import (
 
 TtsFunc = Callable[[str, Path, str, str], float]
 GeminiTtsFunc = Callable[[str, Path, str, str, str, str], float]
-VOICE_PREVIEW_TEXT = "မင်္ဂလာပါ။ James Audio and SRT Generator အသံစမ်းနေပါတယ်။"
 
 
 def safe_file_stem(file_name: str) -> str:
     allowed = "".join(ch for ch in file_name.strip() if ch.isalnum() or ch in (" ", "-", "_"))
     return allowed.strip() or "james_output"
+
+
+def voice_preview_name(voice_label: str) -> str:
+    clean = voice_label.split("(", 1)[0].strip()
+    return clean or "James"
+
+
+def voice_preview_text(voice_label: str) -> str:
+    name = voice_preview_name(voice_label)
+    return f"မင်္ဂလာပါ။ ကျွန်တော်ကတော့ {name}ပါ။ စာကနေအသံပြောင်းပေးမှာဖြစ်ပါတယ်။"
 
 
 def apply_pronunciation_rules(text: str, rules: str) -> str:
@@ -173,7 +182,7 @@ def generate_voice_preview(
         if not api_key.strip():
             raise ValueError("Gemini API Key required for Gemini voice preview.")
         gemini_tts_func(
-            VOICE_PREVIEW_TEXT,
+            voice_preview_text(voice_label),
             mp3_path,
             gemini_voice_id_for_label(voice_label),
             gemini_model_id_for_label(gemini_model),
@@ -182,7 +191,7 @@ def generate_voice_preview(
         )
     else:
         tts_func(
-            VOICE_PREVIEW_TEXT,
+            voice_preview_text(voice_label),
             mp3_path,
             edge_voice_id_for_label(voice_label),
             edge_rate(rate),

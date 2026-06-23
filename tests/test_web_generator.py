@@ -3,7 +3,7 @@ from pathlib import Path
 from james_web_tool.admin import create_paid_user
 from james_web_tool.database import create_user, init_db, list_users
 from james_web_tool.generator import generate_for_user
-from james_web_tool.generator import generate_voice_preview
+from james_web_tool.generator import generate_voice_preview, voice_preview_text
 from james_web_tool.models import PlanGrant, PlanTier
 
 
@@ -233,6 +233,20 @@ def test_generate_voice_preview_uses_edge_voice_and_rate(tmp_path):
     assert "မင်္ဂလာပါ" in calls["text"]
 
 
+def test_voice_preview_text_mentions_selected_edge_voice_name():
+    text = voice_preview_text("သီဟ")
+
+    assert text == "မင်္ဂလာပါ။ ကျွန်တော်ကတော့ သီဟပါ။ စာကနေအသံပြောင်းပေးမှာဖြစ်ပါတယ်။"
+
+
+def test_voice_preview_text_strips_voice_description():
+    text = voice_preview_text("အကိုလေး ( 🇲🇲 - ကျား)")
+
+    assert "အကိုလေးပါ" in text
+    assert "🇲🇲" not in text
+    assert "ကျား" not in text
+
+
 def test_generate_voice_preview_uses_gemini_voice_model_and_key(tmp_path):
     calls = {}
 
@@ -271,6 +285,7 @@ def test_generate_voice_preview_uses_gemini_voice_model_and_key(tmp_path):
     assert calls["model_id"] == "gemini-3.1-flash-tts-preview"
     assert calls["api_key"] == "secret-key"
     assert calls["emotion"] == "Excited (စိတ်လှုပ်ရှား)"
+    assert "Aoedeပါ" in calls["text"]
 
 
 def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
