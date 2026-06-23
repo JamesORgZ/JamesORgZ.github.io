@@ -1,0 +1,15 @@
+.env
+.env.*
+*.log
+__pycache__/
+.pytest_cache/
+.superpowers/
+build/
+dist/
+web_data/
+outputs/
+work/
+models/
+.venv/
+venv/
+*.egg-info/

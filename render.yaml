@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: james-audio-srt-generator
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: JAMES_WEB_DATA_DIR
+        value: /opt/render/project/src/web_data
+      - key: GRADIO_SERVER_NAME
+        value: 0.0.0.0
+      - key: JAMES_TELEGRAM_ADMIN_ID
+        value: "5749918762"
+      - key: JAMES_TELEGRAM_WEBHOOK_SECRET
+        value: james-telegram-webhook-5749918762
+      - key: JAMES_TELEGRAM_BOT_TOKEN
+        sync: false

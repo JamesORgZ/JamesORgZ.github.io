@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "james-srt-studio"
+version = "0.1.0"
+description = "Offline audio/video to SRT desktop tool for James"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "customtkinter>=5.2.2",
+  "edge-tts>=7.2.8",
+  "Pillow>=10.0.0",
+  "faster-whisper>=1.1.0",
+  "gradio>=4.44.1",
+  "huggingface-hub>=0.23.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+james_srt_studio = ["assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
