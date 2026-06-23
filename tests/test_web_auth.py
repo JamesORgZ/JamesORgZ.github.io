@@ -37,3 +37,27 @@ def test_expired_user_is_blocked(tmp_path):
 
     assert user_has_access(user) is False
     assert login_with_pin(db_path, "333333").ok is False
+
+
+def test_login_syncs_remote_paid_pin_when_not_in_local_database(tmp_path, monkeypatch):
+    db_path = tmp_path / "app.sqlite3"
+    init_db(db_path)
+    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+
+    def fake_remote_lookup(pin: str):
+        assert pin == "999888"
+        return {
+            "user_id": "J-REMOTE",
+            "pin": "999888",
+            "plan_tier": PlanTier.VIP.value,
+            "expires_at": expires,
+            "status": "active",
+        }
+
+    monkeypatch.setattr("james_web_tool.auth.lookup_remote_user_by_pin", fake_remote_lookup)
+
+    result = login_with_pin(db_path, "999888")
+
+    assert result.ok is True
+    assert result.user_id == "J-REMOTE"
+    assert result.plan_tier == PlanTier.VIP

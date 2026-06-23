@@ -65,6 +65,33 @@ def create_user(db_path: Path, pin: str, plan_tier: PlanTier, expires_at: str | 
     return user
 
 
+def upsert_remote_user(
+    db_path: Path,
+    user_id: str,
+    pin: str,
+    plan_tier: PlanTier,
+    expires_at: str | None,
+    status: str,
+) -> dict[str, Any]:
+    with connect(db_path) as conn:
+        conn.execute(
+            """
+            INSERT INTO users (user_id, pin, plan_tier, expires_at, status)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                pin = excluded.pin,
+                plan_tier = excluded.plan_tier,
+                expires_at = excluded.expires_at,
+                status = excluded.status,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (user_id, pin, plan_tier.value, expires_at, status),
+        )
+    user = get_user_by_pin(db_path, pin)
+    assert user is not None
+    return user
+
+
 def get_user_by_pin(db_path: Path, pin: str) -> dict[str, Any] | None:
     with connect(db_path) as conn:
         row = conn.execute("SELECT * FROM users WHERE pin = ?", (pin,)).fetchone()

@@ -12,6 +12,7 @@ from typing import Callable, Any
 
 from .admin import create_paid_user
 from .config import default_db_path
+from .auth import user_has_access
 from .database import get_user_by_pin, init_db
 from .models import PlanGrant
 
@@ -243,6 +244,7 @@ def create_webhook_application(
     admin_id: int,
     db_path: Path | None = None,
     webhook_secret: str | None = None,
+    remote_auth_secret: str | None = None,
     api_factory: Callable[[str], TelegramApi] = TelegramApi,
     webhook_setter: Callable[[str, str], dict[str, Any]] | None = None,
 ):
@@ -251,10 +253,42 @@ def create_webhook_application(
     api = api_factory(token)
     expected_path = f"/telegram/{webhook_secret}" if webhook_secret else "/telegram"
     setup_path = f"{expected_path}/setup-webhook"
+    active_remote_auth_secret = remote_auth_secret or os.getenv("JAMES_REMOTE_AUTH_SECRET", "").strip()
+
+    def json_response(start_response, status: str, payload: dict[str, Any]):
+        start_response(status, [("Content-Type", "application/json; charset=utf-8")])
+        return [json.dumps(payload).encode("utf-8")]
+
+    def handle_remote_auth(environ, start_response):
+        if not active_remote_auth_secret:
+            return json_response(start_response, "404 Not Found", {"ok": False})
+        content_length = int(environ.get("CONTENT_LENGTH") or "0")
+        body = environ["wsgi.input"].read(content_length).decode("utf-8")
+        try:
+            payload = json.loads(body or "{}")
+        except json.JSONDecodeError:
+            payload = dict(urllib.parse.parse_qsl(body))
+        if payload.get("secret") != active_remote_auth_secret:
+            return json_response(start_response, "403 Forbidden", {"ok": False})
+        pin = str(payload.get("pin", "")).strip()
+        user = get_user_by_pin(active_db_path, pin) if pin else None
+        if user is None or not user_has_access(user):
+            return json_response(start_response, "200 OK", {"ok": False})
+        safe_user = {
+            "user_id": user["user_id"],
+            "pin": user["pin"],
+            "plan_tier": user["plan_tier"],
+            "expires_at": user.get("expires_at"),
+            "status": user["status"],
+        }
+        return json_response(start_response, "200 OK", {"ok": True, "user": safe_user})
 
     def application(environ, start_response):
         method = environ.get("REQUEST_METHOD")
         path = environ.get("PATH_INFO")
+
+        if method == "POST" and path == "/auth/pin":
+            return handle_remote_auth(environ, start_response)
 
         if method == "GET" and path == setup_path:
             scheme = environ.get("wsgi.url_scheme", "https")
@@ -295,7 +329,13 @@ def create_webhook_application_from_env():
         raise RuntimeError("JAMES_TELEGRAM_ADMIN_ID must be a number.")
     if not webhook_secret:
         raise RuntimeError("JAMES_TELEGRAM_WEBHOOK_SECRET is required.")
-    return create_webhook_application(token=token, admin_id=int(admin_id), webhook_secret=webhook_secret)
+    remote_auth_secret = os.getenv("JAMES_REMOTE_AUTH_SECRET", "").strip()
+    return create_webhook_application(
+        token=token,
+        admin_id=int(admin_id),
+        webhook_secret=webhook_secret,
+        remote_auth_secret=remote_auth_secret,
+    )
 
 
 def set_webhook(token: str, webhook_url: str) -> dict[str, Any]:

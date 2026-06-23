@@ -41,6 +41,49 @@ def call_wsgi(app, path, body=b"{}", method="POST"):
     return result
 
 
+def test_webhook_application_exposes_remote_pin_auth_for_website(tmp_path):
+    db_path = tmp_path / "app.sqlite3"
+    create_pin_for_plan(db_path, "1m", pin_factory=lambda: "445566")
+    app = create_webhook_application(
+        token="test-token",
+        admin_id=5749918762,
+        db_path=db_path,
+        webhook_secret="telegram-secret",
+        remote_auth_secret="website-secret",
+        api_factory=lambda _token: FakeApi(),
+    )
+    body = b'{"pin":"445566","secret":"website-secret"}'
+
+    response = call_wsgi(app, "/auth/pin", body)
+    payload = __import__("json").loads(response["body"].decode("utf-8"))
+
+    assert response["status"].startswith("200")
+    assert payload["ok"] is True
+    assert payload["user"]["pin"] == "445566"
+    assert payload["user"]["plan_tier"] == PlanTier.VIP.value
+    assert payload["user"]["status"] == "active"
+
+
+def test_webhook_application_rejects_remote_pin_auth_with_bad_secret(tmp_path):
+    db_path = tmp_path / "app.sqlite3"
+    create_pin_for_plan(db_path, "1m", pin_factory=lambda: "445566")
+    app = create_webhook_application(
+        token="test-token",
+        admin_id=5749918762,
+        db_path=db_path,
+        webhook_secret="telegram-secret",
+        remote_auth_secret="website-secret",
+        api_factory=lambda _token: FakeApi(),
+    )
+    body = b'{"pin":"445566","secret":"wrong"}'
+
+    response = call_wsgi(app, "/auth/pin", body)
+    payload = __import__("json").loads(response["body"].decode("utf-8"))
+
+    assert response["status"].startswith("403")
+    assert payload["ok"] is False
+
+
 def test_plan_options_match_james_prices():
     assert PLAN_OPTIONS["1m"].price_label == "5000ks"
     assert PLAN_OPTIONS["3m"].price_label == "12000ks"
