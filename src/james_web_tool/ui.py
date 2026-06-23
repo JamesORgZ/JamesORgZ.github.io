@@ -232,7 +232,7 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                     disable_btn = gr.Button("Disable")
                     delete_btn = gr.Button("Delete User")
 
-        with gr.Tab("Generator"):
+        with gr.Tab("Generator", visible=False) as generator_tab:
             current_user = gr.Markdown("Not logged in")
             transcript = gr.Textbox(label="Myanmar Transcript", lines=12)
 
@@ -305,12 +305,13 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                 "Admin panel ready.",
                 _users_table(list_users(db_path)),
                 memory or {},
+                gr.update(visible=True),
             )
 
         def do_login(pin_value: str, remember_value: bool):
             result = login_with_pin(db_path, pin_value)
             if not result.ok:
-                return result.message, "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}
+                return result.message, "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=False)
             admin_text = "Admin panel ready." if result.is_admin else "Admin login required."
             user = get_user_by_pin(db_path, pin_value.strip()) if not result.is_admin else None
             user_text = (
@@ -328,32 +329,33 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                 admin_text,
                 _users_table(list_users(db_path)) if result.is_admin else [],
                 memory,
+                gr.update(visible=True),
             )
 
         login_btn.click(
             do_login,
             inputs=[pin, remember_admin],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory],
+            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, generator_tab],
         )
 
         def restore_saved_admin(memory: dict | None):
             if should_restore_admin(memory):
                 return admin_unlocked_outputs("Saved admin login restored.", memory)
-            return "", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}
+            return "", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=False)
 
         app.load(
             restore_saved_admin,
             inputs=[admin_memory],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory],
+            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, generator_tab],
         )
 
         def forget_saved_admin():
-            return "Saved admin login cleared.", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}
+            return "Saved admin login cleared.", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=False)
 
         forget_admin_btn.click(
             forget_saved_admin,
             inputs=[],
-            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory],
+            outputs=[login_status, session_user_id, session_is_admin, current_user, admin_panel, admin_status, users, admin_memory, generator_tab],
         )
 
         tts_engine.change(voice_dropdown_for_engine, inputs=[tts_engine], outputs=[voice])

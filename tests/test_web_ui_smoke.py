@@ -91,6 +91,9 @@ def test_admin_panel_is_not_a_public_top_level_tab(tmp_path, monkeypatch):
     button_values = [getattr(component, "value", None) for component in app.blocks.values()]
 
     assert "Admin" not in visible_tabs
+    assert "Free Tool" in visible_tabs
+    assert "Login" in visible_tabs
+    assert "Generator" not in visible_tabs
     assert "Admin Panel" in labels
     assert "Delete User" in button_values
     assert "Remember admin on this browser" in labels
@@ -171,6 +174,7 @@ def test_login_handler_display_includes_remaining_days(tmp_path, monkeypatch):
 
     assert "VIP" in outputs[3]
     assert "ကျန်ရက်:" in outputs[3]
+    assert outputs[8]["visible"] is True
 
 
 def test_admin_can_use_generator_without_user_pin(tmp_path, monkeypatch):
