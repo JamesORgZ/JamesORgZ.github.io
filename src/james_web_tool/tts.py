@@ -22,21 +22,21 @@ GEMINI_MODEL_IDS = {
 def voice_id_for_label(label: str) -> str:
     voices = voice_display_options()
     if label not in voices:
-        return voices["မြမြ"]
+        return voices["James Velvet MM-02 (Female)"]
     return voices[label]
 
 
 def edge_voice_id_for_label(label: str) -> str:
     voices = edge_voice_options()
     if label not in voices:
-        return voices["မြမြ"]
+        return voices["James Velvet MM-02 (Female)"]
     return voices[label]
 
 
 def gemini_voice_id_for_label(label: str) -> str:
     voices = gemini_voice_options()
     if label not in voices:
-        return voices["Aoede (မ - လွတ်လပ်ပေါ့ပါး)"]
+        return voices["James Nova G-01 (Female)"]
     return voices[label]
 
 

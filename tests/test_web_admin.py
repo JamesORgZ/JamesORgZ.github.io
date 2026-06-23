@@ -54,7 +54,7 @@ def test_delete_user_removes_user_and_jobs(tmp_path):
         db_path,
         user_id=user["user_id"],
         input_chars=10,
-        voice_label="မြမြ",
+        voice_label="James Velvet MM-02 (Female)",
         mp3_path="out.mp3",
         srt_path="out.srt",
         created_at=datetime.now(timezone.utc).isoformat(),

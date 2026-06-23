@@ -105,13 +105,13 @@ def voice_dropdown_for_engine(engine: str):
         voices = gemini_voice_options()
         return gr.update(
             choices=list(voices.keys()),
-            value="Aoede (မ - လွတ်လပ်ပေါ့ပါး)",
+            value="James Nova G-01 (Female)",
             label="[V1] Voice (Gemini)",
         )
     voices = edge_voice_options()
     return gr.update(
         choices=list(voices.keys()),
-        value="အကိုလေး ( 🇲🇲 - ကျား)",
+        value="James Hero MM-01 (Male)",
         label="[V1] Voice",
     )
 
@@ -142,7 +142,7 @@ def build_app() -> gr.Blocks:
             gr.Markdown("### 🎁 Free Marketing Tool\nLogin မလိုဘဲ စမ်းသုံးနိုင်ပါတယ်။ Free plan က 500 characters အထိပဲ ထုတ်ပေးမယ်။")
             free_text = gr.Textbox(label="Free Myanmar Text", lines=8, placeholder="မြန်မာစာထည့်ပါ...")
             with gr.Row():
-                free_voice = gr.Dropdown(choices=list(edge_voice_options().keys()), value="မြမြ", label="Free Voice")
+                free_voice = gr.Dropdown(choices=list(edge_voice_options().keys()), value="James Velvet MM-02 (Female)", label="Free Voice")
                 free_srt_format = gr.Radio(choices=["Single Line", "2 Lines"], value="Single Line", label="Free SRT Format")
             free_btn = gr.Button("Generate Free MP3 & SRT", variant="primary")
             free_status = gr.Markdown("")
@@ -217,7 +217,7 @@ def build_app() -> gr.Blocks:
                 file_name = gr.Textbox(value="James_TTSrt", label="သိမ်းမယ့်ဖိုင် နာမည် (File Name)")
                 voice = gr.Dropdown(
                     choices=list(edge_voice_options().keys()),
-                    value="အကိုလေး ( 🇲🇲 - ကျား)",
+                    value="James Hero MM-01 (Male)",
                     label="[VIP] Voice",
                 )
                 preview_voice_btn = gr.Button("🔊 အသံ (Voice) အသံစမ်းနားထောင်မည်")

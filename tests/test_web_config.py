@@ -24,5 +24,5 @@ def test_plan_grant_days_and_tiers():
 def test_voice_display_options_include_myanmar_defaults():
     options = voice_display_options()
 
-    assert options["မြမြ"] == "my-MM-NilarNeural"
-    assert options["အကိုလေး"] == "my-MM-ThihaNeural"
+    assert options["James Velvet MM-02 (Female)"] == "my-MM-NilarNeural"
+    assert options["James Hero MM-01 (Male)"] == "my-MM-ThihaNeural"

@@ -42,7 +42,7 @@ def test_record_job_and_list_users(tmp_path):
         db_path,
         user_id=user["user_id"],
         input_chars=42,
-        voice_label="မြမြ",
+        voice_label="James Velvet MM-02 (Female)",
         mp3_path="outputs/test.mp3",
         srt_path="outputs/test.srt",
         created_at=datetime.now(timezone.utc).isoformat(),
