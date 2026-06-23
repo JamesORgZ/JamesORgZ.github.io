@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
 import gradio as gr
 
@@ -100,6 +101,19 @@ def should_restore_admin(memory: dict | None) -> bool:
     return bool(isinstance(memory, dict) and memory.get("admin_remembered") is True)
 
 
+def today_key() -> str:
+    return datetime.utcnow().date().isoformat()
+
+
+def updated_free_usage_or_error(usage: dict | None, today: str | None = None) -> dict[str, int | str]:
+    current_day = today or today_key()
+    current_usage = usage if isinstance(usage, dict) else {}
+    count = int(current_usage.get("count", 0)) if current_usage.get("date") == current_day else 0
+    if count >= 3:
+        raise ValueError("Free tool limit is 3 times / day. Please upgrade to VIP for unlimited jobs.")
+    return {"date": current_day, "count": count + 1}
+
+
 def voice_dropdown_for_engine(engine: str):
     if engine == "Gemini API (Key Required)":
         voices = gemini_voice_options()
@@ -125,6 +139,7 @@ def build_app() -> gr.Blocks:
         session_user_id = gr.State("")
         session_is_admin = gr.State(False)
         admin_memory = browser_state_or_session_state({})
+        free_usage = browser_state_or_session_state({})
 
         gr.HTML(
             f"""
@@ -139,7 +154,22 @@ def build_app() -> gr.Blocks:
         )
 
         with gr.Tab("Free Tool"):
-            gr.Markdown("### 🎁 Free Marketing Tool\nLogin မလိုဘဲ စမ်းသုံးနိုင်ပါတယ်။ Free plan က 500 characters အထိပဲ ထုတ်ပေးမယ်။")
+            gr.Markdown(
+                """
+### 🎁 Free Marketing Tool
+Login မလိုဘဲ စမ်းသုံးနိုင်ပါတယ်။ Free plan က 5000 characters အထိ၊ တစ်နေ့ 3 ကြိမ်အထိ ထုတ်ပေးမယ်။
+
+### Free vs VIP vs Lifetime
+
+| Plan | Characters | Voices | SRT | Jobs |
+| --- | --- | --- | --- | --- |
+| Free | 5000 characters | Basic voice | Basic SRT | 3 times / day |
+| VIP | unlimited characters | More voices | Better SRT output | unlimited time/jobs |
+| Lifetime | unlimited characters | More voices | Better SRT output | unlimited time/jobs |
+
+VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီး အသံရွေးချယ်မှု၊ SRT output နဲ့ job count ကိုပိုလွတ်လပ်စွာသုံးနိုင်ပါတယ်။
+"""
+            )
             free_text = gr.Textbox(label="Free Myanmar Text", lines=8, placeholder="မြန်မာစာထည့်ပါ...")
             with gr.Row():
                 free_voice = gr.Dropdown(choices=list(edge_voice_options().keys()), value="မြန်မာမ ၂", label="Free Voice")
@@ -175,8 +205,8 @@ def build_app() -> gr.Blocks:
                 with gr.Row():
                     grant_1m = gr.Button("Grant 1M VIP")
                     grant_3m = gr.Button("Grant 3M VIP")
-                    grant_6m = gr.Button("Grant 6M VVIP")
-                    grant_1y = gr.Button("Grant 1Y VVIP")
+                    grant_6m = gr.Button("Grant 6M VIP")
+                    grant_1y = gr.Button("Grant 1Y VIP")
                     grant_life = gr.Button("Grant Lifetime")
                 with gr.Row():
                     revoke_btn = gr.Button("Revoke")
@@ -336,7 +366,11 @@ def build_app() -> gr.Blocks:
             outputs=[voice_preview],
         )
 
-        def do_free_generate(text: str, voice_label: str, fmt: str):
+        def do_free_generate(text: str, voice_label: str, fmt: str, usage: dict | None):
+            try:
+                new_usage = updated_free_usage_or_error(usage)
+            except Exception as exc:
+                raise gr.Error(str(exc)) from exc
             free_user_id = ensure_free_user(db_path)
             result = generate_for_user(
                 db_path,
@@ -347,12 +381,12 @@ def build_app() -> gr.Blocks:
                 fmt,
                 "free_james_output",
             )
-            return result.message, str(result.mp3_path), str(result.mp3_path), str(result.srt_path)
+            return result.message, str(result.mp3_path), str(result.mp3_path), str(result.srt_path), new_usage
 
         free_btn.click(
             do_free_generate,
-            inputs=[free_text, free_voice, free_srt_format],
-            outputs=[free_status, free_audio, free_mp3, free_srt],
+            inputs=[free_text, free_voice, free_srt_format, free_usage],
+            outputs=[free_status, free_audio, free_mp3, free_srt, free_usage],
         )
 
         def do_generate(

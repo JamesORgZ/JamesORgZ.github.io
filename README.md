@@ -17,7 +17,7 @@ Public Gradio web tool for James Audio & SRT Generator.
 ## Web features
 
 - Free marketing tool
-- PIN login for VIP/VVIP users
+- PIN login for VIP users
 - Admin panel
 - Myanmar/English TTS + MP3/SRT export
 
@@ -52,3 +52,4 @@ python -m james_srt_studio.app
 ```
 
 The first real transcription downloads the local Whisper model if it is not installed yet. After that, the app can run without internet.
+

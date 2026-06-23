@@ -16,7 +16,8 @@ def test_app_name_and_default_paths_are_stable(tmp_path, monkeypatch):
 def test_plan_grant_days_and_tiers():
     assert PlanGrant.ONE_MONTH.days == 30
     assert PlanGrant.THREE_MONTHS.tier == PlanTier.VIP
-    assert PlanGrant.SIX_MONTHS.tier == PlanTier.VVIP
+    assert PlanGrant.SIX_MONTHS.tier == PlanTier.VIP
+    assert PlanGrant.ONE_YEAR.tier == PlanTier.VIP
     assert PlanGrant.ONE_YEAR.days == 365
     assert PlanGrant.LIFETIME.days is None
 

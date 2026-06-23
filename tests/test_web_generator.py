@@ -99,47 +99,45 @@ def test_free_user_is_limited_to_short_basic_generation(tmp_path):
             db_path=db_path,
             output_dir=output_dir,
             user_id=user["user_id"],
-            text="က" * 501,
+            text="က" * 5001,
             voice_label="မြန်မာမ ၂",
             srt_format="Single Line",
             file_name="free_output",
             tts_func=fake_tts,
         )
     except ValueError as exc:
-        assert "Free plan limit is 500 characters" in str(exc)
+        assert "Free plan limit is 5,000 characters" in str(exc)
     else:
         raise AssertionError("Expected free character limit error")
 
 
-def test_vip_cannot_use_vvip_only_features(tmp_path):
+def test_vip_can_use_advanced_features_and_long_text(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     output_dir = tmp_path / "outputs"
     init_db(db_path)
     user = create_paid_user(db_path, pin="222222", grant=PlanGrant.ONE_MONTH)
 
-    try:
-        generate_for_user(
-            db_path=db_path,
-            output_dir=output_dir,
-            user_id=user["user_id"],
-            text="မင်္ဂလာပါ။",
-            voice_label="မြန်မာမ ၂",
-            srt_format="YouTube",
-            file_name="vip_output",
-            pronunciation_rules="မင်္ဂလာပါ => မင်္ဂလာပါ",
-            tts_func=fake_tts,
-        )
-    except ValueError as exc:
-        assert "VVIP feature" in str(exc)
-    else:
-        raise AssertionError("Expected VVIP feature gate error")
+    result = generate_for_user(
+        db_path=db_path,
+        output_dir=output_dir,
+        user_id=user["user_id"],
+        text=("မင်္ဂလာပါ။ " * 800).strip(),
+        voice_label="မြန်မာမ ၂",
+        srt_format="YouTube",
+        file_name="vip_output",
+        pronunciation_rules="မင်္ဂလာပါ => မင်္ဂလာပါ",
+        tts_func=fake_tts,
+    )
+
+    assert result.mp3_path.exists()
 
 
-def test_vvip_can_use_pronunciation_rules_and_youtube_format(tmp_path):
+def test_six_month_plan_is_vip_and_can_use_pronunciation_rules_and_youtube_format(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     output_dir = tmp_path / "outputs"
     init_db(db_path)
     user = create_paid_user(db_path, pin="333333", grant=PlanGrant.SIX_MONTHS)
+    assert user["plan_tier"] == PlanTier.VIP.value
 
     result = generate_for_user(
         db_path=db_path,
@@ -148,7 +146,7 @@ def test_vvip_can_use_pronunciation_rules_and_youtube_format(tmp_path):
         text="James စမ်းမယ်။",
         voice_label="မြန်မာမ ၂",
         srt_format="YouTube",
-        file_name="vvip_output",
+        file_name="vip_output",
         pronunciation_rules="James => ဂျိမ်းစ်",
         tts_func=fake_tts,
     )
@@ -307,6 +305,7 @@ def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
         assert "Gemini API Key required" in str(exc)
     else:
         raise AssertionError("Expected missing Gemini API key error")
+
 
 
 

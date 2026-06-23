@@ -12,7 +12,7 @@ The product’s main job is:
 Myanmar transcript / text -> Myanmar MP3 audio + accurate SRT
 ```
 
-The first launch version is a Gradio-based MVP with a premium dashboard look, manual VIP/VVIP access control, and admin-managed users. It is not a full subscription SaaS yet.
+The first launch version is a Gradio-based MVP with a premium dashboard look, manual VIP/lifetime access control, and admin-managed users. It is not a full subscription SaaS yet.
 
 ## Brand and UI Direction
 
@@ -35,9 +35,9 @@ The system uses time-based access.
 
 - `1 month` = VIP
 - `3 months` = VIP
-- `6 months` = VVIP
-- `1 year` = VVIP
-- `Lifetime` = VVIP / Lifetime
+- `6 months` = VIP
+- `1 year` = VIP
+- `Lifetime` = Lifetime
 
 Payment is handled manually outside the app at first, such as KPay, Wave, or bank transfer. After payment confirmation, the admin grants or extends access.
 
@@ -110,9 +110,9 @@ Admin can:
 - Edit PIN/password
 - Grant 1 month VIP
 - Grant 3 months VIP
-- Grant 6 months VVIP
-- Grant 1 year VVIP
-- Grant lifetime VVIP
+- Grant 6 months VIP
+- Grant 1 year VIP
+- Grant lifetime
 - Revoke access
 - Disable/enable user
 - Reset device/session record
@@ -181,7 +181,7 @@ Verify:
 
 - Login works for normal user and admin
 - Expired user cannot generate
-- VIP/VVIP plan labels and expiry dates work
+- VIP/lifetime plan labels and expiry dates work
 - Myanmar text generates MP3 and SRT
 - SRT timestamps are valid
 - Myanmar line breaks do not split words badly
@@ -206,4 +206,3 @@ If usage grows, upgrade to:
 - PostgreSQL
 - Dedicated job queue
 - Official paid TTS API keys
-

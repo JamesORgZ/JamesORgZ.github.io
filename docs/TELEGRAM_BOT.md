@@ -7,8 +7,8 @@ and creates a 6-digit login PIN after admin approval.
 
 - 1 month VIP: 5000ks
 - 3 months VIP: 12000ks
-- 6 months VVIP: 25000ks
-- 1 year VVIP: 35000ks
+- 6 months VIP: 25000ks
+- 1 year VIP: 35000ks
 - Lifetime: 50000ks
 
 ## Run
@@ -46,3 +46,4 @@ $env:JAMES_TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN"
 $env:JAMES_TELEGRAM_WEBHOOK_URL="https://Jamestts.pythonanywhere.com/telegram/YOUR_PRIVATE_SECRET_PATH"
 python set_telegram_webhook.py
 ```
+

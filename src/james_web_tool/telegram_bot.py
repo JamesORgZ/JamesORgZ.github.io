@@ -27,14 +27,15 @@ class PlanOption:
 PLAN_OPTIONS = {
     "1m": PlanOption("1m", "1 Month VIP", "5000ks", PlanGrant.ONE_MONTH),
     "3m": PlanOption("3m", "3 Months VIP", "12000ks", PlanGrant.THREE_MONTHS),
-    "6m": PlanOption("6m", "6 Months VVIP", "25000ks", PlanGrant.SIX_MONTHS),
-    "1y": PlanOption("1y", "1 Year VVIP", "35000ks", PlanGrant.ONE_YEAR),
+    "6m": PlanOption("6m", "6 Months VIP", "25000ks", PlanGrant.SIX_MONTHS),
+    "1y": PlanOption("1y", "1 Year VIP", "35000ks", PlanGrant.ONE_YEAR),
     "life": PlanOption("life", "Lifetime", "50000ks", PlanGrant.LIFETIME),
 }
 
 KPAY_PHONE = "09691505900"
 KPAY_NAME = "Aung Pyae Phyoe"
 ADMIN_TELEGRAM_URL = "https://t.me/JamesOrg"
+WEBSITE_URL = os.getenv("JAMES_WEBSITE_URL", "https://jamesorgggh-james-audio-srt-generator.hf.space")
 
 
 def default_pin_factory() -> str:
@@ -56,6 +57,7 @@ def create_pin_for_plan(
 ) -> dict[str, Any]:
     if plan_key not in PLAN_OPTIONS:
         raise ValueError(f"Unknown plan: {plan_key}")
+    init_db(db_path)
     pin = generate_unique_pin(db_path, pin_factory=pin_factory)
     return create_paid_user(db_path, pin=pin, grant=PLAN_OPTIONS[plan_key].grant)
 
@@ -211,8 +213,10 @@ def handle_callback(api: TelegramApi, db_path: Path, admin_id: int, callback: di
             (
                 "✅ Payment approved!\n\n"
                 f"Plan: {option.label}\n"
-                f"Login PIN: {user['pin']}\n\n"
-                "ဒီ PIN နဲ့ web tool မှာ login ဝင်ပါ။"
+                f"Login PIN: {user['pin']}\n"
+                "Status: active\n"
+                f"Website: {WEBSITE_URL}\n\n"
+                "ဒီ PIN နဲ့ website မှာ Login ဝင်ပြီးအသုံးပြုပါ။"
             ),
         )
         api.answer_callback(callback_id, f"Created PIN {user['pin']}")

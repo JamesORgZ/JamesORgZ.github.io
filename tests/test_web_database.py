@@ -27,7 +27,7 @@ def test_create_and_find_user_by_pin(tmp_path):
 def test_search_users_matches_user_id_and_pin(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     init_db(db_path)
-    user = create_user(db_path, pin="654321", plan_tier=PlanTier.VVIP, expires_at="2099-01-01T00:00:00+00:00")
+    user = create_user(db_path, pin="654321", plan_tier=PlanTier.VIP, expires_at="2099-01-01T00:00:00+00:00")
 
     assert search_users(db_path, user["user_id"])[0]["pin"] == "654321"
     assert search_users(db_path, "654")[0]["user_id"] == user["user_id"]

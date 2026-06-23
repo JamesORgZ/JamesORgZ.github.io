@@ -64,6 +64,15 @@ def test_free_marketing_tool_controls_are_present(tmp_path, monkeypatch):
     assert "Free SRT Format" in labels
     assert "Free MP3 Download" in labels
     assert "Free SRT Download" in labels
+    markdown_values = "\n".join(
+        str(getattr(component, "value", ""))
+        for component in app.blocks.values()
+        if component.__class__.__name__ == "Markdown"
+    )
+    assert "Free vs VIP vs Lifetime" in markdown_values
+    assert "5000 characters" in markdown_values
+    assert "3 times / day" in markdown_values
+    assert "unlimited characters" in markdown_values
 
 
 def test_admin_panel_is_not_a_public_top_level_tab(tmp_path, monkeypatch):
@@ -83,6 +92,10 @@ def test_admin_panel_is_not_a_public_top_level_tab(tmp_path, monkeypatch):
     assert "Delete User" in button_values
     assert "Remember admin on this browser" in labels
     assert "Forget saved admin login" in button_values
+    assert "Grant 6M VIP" in button_values
+    assert "Grant 1Y VIP" in button_values
+    assert "Grant 6M VIP" in button_values
+    assert "Grant 1Y VIP" in button_values
 
 
 def test_browser_state_falls_back_to_session_state(monkeypatch):
@@ -91,3 +104,26 @@ def test_browser_state_falls_back_to_session_state(monkeypatch):
     state = ui.browser_state_or_session_state({})
 
     assert state.__class__.__name__ == "State"
+
+
+def test_free_usage_allows_three_jobs_per_day_then_blocks():
+    usage = {}
+
+    usage = ui.updated_free_usage_or_error(usage, today="2026-06-23")
+    usage = ui.updated_free_usage_or_error(usage, today="2026-06-23")
+    usage = ui.updated_free_usage_or_error(usage, today="2026-06-23")
+
+    try:
+        ui.updated_free_usage_or_error(usage, today="2026-06-23")
+    except ValueError as exc:
+        assert "Free tool limit is 3 times / day" in str(exc)
+    else:
+        raise AssertionError("Expected free daily limit error")
+
+
+def test_free_usage_resets_on_new_day():
+    usage = {"date": "2026-06-22", "count": 3}
+
+    updated = ui.updated_free_usage_or_error(usage, today="2026-06-23")
+
+    assert updated == {"date": "2026-06-23", "count": 1}

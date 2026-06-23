@@ -6,6 +6,7 @@ from james_web_tool.telegram_bot import (
     create_webhook_application,
     generate_unique_pin,
     handle_callback,
+    WEBSITE_URL,
 )
 
 
@@ -66,7 +67,7 @@ def test_create_pin_for_plan_creates_paid_user(tmp_path):
     user = create_pin_for_plan(db_path, "6m", pin_factory=lambda: "111222")
 
     assert user["pin"] == "111222"
-    assert user["plan_tier"] == PlanTier.VVIP.value
+    assert user["plan_tier"] == PlanTier.VIP.value
     assert user["expires_at"] is not None
     assert get_user_by_pin(db_path, "111222")["user_id"] == user["user_id"]
 
@@ -163,3 +164,28 @@ def test_payment_done_sends_purchase_request_to_admin(tmp_path):
     assert "New purchase request" in fake_api.sent_messages[0][1]
     assert "3 Months VIP" in fake_api.sent_messages[0][1]
     assert fake_api.sent_messages[1][0] == 2037708908
+
+
+def test_longer_plans_are_vip():
+    assert PLAN_OPTIONS["6m"].label == "6 Months VIP"
+    assert PLAN_OPTIONS["1y"].label == "1 Year VIP"
+    assert PLAN_OPTIONS["6m"].grant.tier == PlanTier.VIP
+    assert PLAN_OPTIONS["1y"].grant.tier == PlanTier.VIP
+
+
+def test_admin_approve_sends_active_pin_and_website_link(tmp_path):
+    fake_api = FakeApi()
+    callback = {
+        "id": "cb3",
+        "data": "approve:1m:2037708908",
+        "from": {"id": 5749918762, "username": "JamesOrg"},
+        "message": {"chat": {"id": 5749918762}},
+    }
+
+    handle_callback(fake_api, tmp_path / "app.sqlite3", 5749918762, callback)
+
+    user_message = fake_api.sent_messages[0][1]
+    assert "Payment approved" in user_message
+    assert "Login PIN:" in user_message
+    assert WEBSITE_URL in user_message
+    assert "active" in user_message.lower()

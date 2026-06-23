@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a Gradio premium-dashboard MVP for `James Audio & Srt Generator`, focused on Myanmar transcript/text to MP3 + SRT with admin-controlled VIP/VVIP access.
+**Goal:** Build a Gradio premium-dashboard MVP for `James Audio & Srt Generator`, focused on Myanmar transcript/text to MP3 + SRT with admin-controlled VIP/lifetime access.
 
 **Architecture:** Add a separate `james_web_tool` package beside the existing desktop package. Keep the generation engine, database/auth, admin actions, and Gradio UI in separate focused modules. Use SQLite for user/job storage and Edge/Azure-style Myanmar voices for the first safe TTS provider.
 
@@ -27,7 +27,7 @@
 - Create `src/james_web_tool/generator.py`
   - Text-to-MP3+SRT orchestration and job recording.
 - Create `src/james_web_tool/admin.py`
-  - Admin operations: create user, grant VIP/VVIP, revoke, disable, search.
+  - Admin operations: create user, grant VIP/lifetime, revoke, disable, search.
 - Create `src/james_web_tool/ui.py`
   - Gradio premium dashboard UI and event handlers.
 - Create `run_james_audio_srt_web.py`
@@ -76,7 +76,7 @@ def test_app_name_and_default_paths_are_stable(tmp_path, monkeypatch):
 def test_plan_grant_days_and_tiers():
     assert PlanGrant.ONE_MONTH.days == 30
     assert PlanGrant.THREE_MONTHS.tier == PlanTier.VIP
-    assert PlanGrant.SIX_MONTHS.tier == PlanTier.VVIP
+    assert PlanGrant.SIX_MONTHS.tier == PlanTier.VIP
     assert PlanGrant.ONE_YEAR.days == 365
     assert PlanGrant.LIFETIME.days is None
 
@@ -154,7 +154,7 @@ from pathlib import Path
 class PlanTier(str, Enum):
     NONE = "NONE"
     VIP = "VIP"
-    VVIP = "VVIP"
+    LIFETIME = "LIFETIME"
     LIFETIME = "LIFETIME"
 
 
@@ -179,8 +179,8 @@ class PlanGrant:
 
 PlanGrant.ONE_MONTH = PlanGrant("1 month", 30, PlanTier.VIP)
 PlanGrant.THREE_MONTHS = PlanGrant("3 months", 90, PlanTier.VIP)
-PlanGrant.SIX_MONTHS = PlanGrant("6 months", 180, PlanTier.VVIP)
-PlanGrant.ONE_YEAR = PlanGrant("1 year", 365, PlanTier.VVIP)
+PlanGrant.SIX_MONTHS = PlanGrant("6 months", 180, PlanTier.VIP)
+PlanGrant.ONE_YEAR = PlanGrant("1 year", 365, PlanTier.VIP)
 PlanGrant.LIFETIME = PlanGrant("lifetime", None, PlanTier.LIFETIME)
 
 
@@ -271,7 +271,7 @@ def test_create_and_find_user_by_pin(tmp_path):
 def test_search_users_matches_user_id_and_pin(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     init_db(db_path)
-    user = create_user(db_path, pin="654321", plan_tier=PlanTier.VVIP, expires_at="2099-01-01T00:00:00+00:00")
+    user = create_user(db_path, pin="654321", plan_tier=PlanTier.VIP, expires_at="2099-01-01T00:00:00+00:00")
 
     assert search_users(db_path, user["user_id"])[0]["pin"] == "654321"
     assert search_users(db_path, "654")[0]["user_id"] == user["user_id"]
@@ -555,7 +555,7 @@ def parse_datetime(value: str | None) -> datetime | None:
 def user_has_access(user: dict[str, Any]) -> bool:
     if user.get("status") != "active":
         return False
-    if user.get("plan_tier") in {PlanTier.LIFETIME.value, PlanTier.VVIP.value} and user.get("expires_at") is None:
+    if user.get("plan_tier") == PlanTier.LIFETIME.value and user.get("expires_at") is None:
         return True
     expires = parse_datetime(user.get("expires_at"))
     if expires is None:
@@ -1007,8 +1007,8 @@ def build_app() -> gr.Blocks:
             with gr.Row():
                 grant_1m = gr.Button("Grant 1M VIP")
                 grant_3m = gr.Button("Grant 3M VIP")
-                grant_6m = gr.Button("Grant 6M VVIP")
-                grant_1y = gr.Button("Grant 1Y VVIP")
+                grant_6m = gr.Button("Grant 6M VIP")
+                grant_1y = gr.Button("Grant 1Y VIP")
                 grant_life = gr.Button("Grant Lifetime")
             with gr.Row():
                 revoke_btn = gr.Button("Revoke")
@@ -1189,7 +1189,7 @@ Expected: server exits cleanly.
 
 - Spec coverage:
   - Premium dashboard: Task 6 UI/CSS.
-  - VIP/VVIP plans: Tasks 1, 3, 4, 6.
+  - VIP/lifetime plans: Tasks 1, 3, 4, 6.
   - Admin panel: Tasks 4 and 6.
   - Myanmar transcript to MP3 + SRT: Task 5.
   - SQLite storage: Task 2.

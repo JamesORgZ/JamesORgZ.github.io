@@ -18,7 +18,7 @@ def parse_datetime(value: str | None) -> datetime | None:
 def user_has_access(user: dict[str, Any]) -> bool:
     if user.get("status") != "active":
         return False
-    if user.get("plan_tier") in {PlanTier.LIFETIME.value, PlanTier.VVIP.value} and user.get("expires_at") is None:
+    if user.get("plan_tier") == PlanTier.LIFETIME.value and user.get("expires_at") is None:
         return True
     expires = parse_datetime(user.get("expires_at"))
     if expires is None:

@@ -8,7 +8,6 @@ from pathlib import Path
 class PlanTier(str, Enum):
     NONE = "NONE"
     VIP = "VIP"
-    VVIP = "VVIP"
     LIFETIME = "LIFETIME"
 
 
@@ -33,8 +32,8 @@ class PlanGrant:
 
 PlanGrant.ONE_MONTH = PlanGrant("1 month", 30, PlanTier.VIP)
 PlanGrant.THREE_MONTHS = PlanGrant("3 months", 90, PlanTier.VIP)
-PlanGrant.SIX_MONTHS = PlanGrant("6 months", 180, PlanTier.VVIP)
-PlanGrant.ONE_YEAR = PlanGrant("1 year", 365, PlanTier.VVIP)
+PlanGrant.SIX_MONTHS = PlanGrant("6 months", 180, PlanTier.VIP)
+PlanGrant.ONE_YEAR = PlanGrant("1 year", 365, PlanTier.VIP)
 PlanGrant.LIFETIME = PlanGrant("lifetime", None, PlanTier.LIFETIME)
 
 

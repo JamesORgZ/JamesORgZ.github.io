@@ -80,21 +80,11 @@ def user_plan_tier(user: dict) -> PlanTier:
 
 def enforce_plan_limits(plan_tier: PlanTier, text: str, srt_format: str, pronunciation_rules: str) -> None:
     if plan_tier == PlanTier.NONE:
-        if len(text) > 500:
-            raise ValueError("Free plan limit is 500 characters. Please upgrade to VIP.")
-        if pronunciation_rules.strip() or srt_format == "YouTube":
-            raise ValueError("This is a VIP/VVIP feature. Please upgrade.")
-        return
-
-    if plan_tier == PlanTier.VIP:
         if len(text) > 5000:
-            raise ValueError("VIP plan limit is 5,000 characters. Please upgrade to VVIP.")
+            raise ValueError("Free plan limit is 5,000 characters. Please upgrade to VIP.")
         if pronunciation_rules.strip() or srt_format == "YouTube":
-            raise ValueError("This is a VVIP feature. Please upgrade to VVIP.")
+            raise ValueError("This is a VIP feature. Please upgrade.")
         return
-
-    if len(text) > 20000:
-        raise ValueError("VVIP plan limit is 20,000 characters per job.")
 
 
 def generate_for_user(
