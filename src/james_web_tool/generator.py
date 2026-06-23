@@ -19,6 +19,7 @@ from .tts import (
 
 TtsFunc = Callable[[str, Path, str, str], float]
 GeminiTtsFunc = Callable[[str, Path, str, str, str, str], float]
+VOICE_PREVIEW_TEXT = "မင်္ဂလာပါ။ James Audio and SRT Generator အသံစမ်းနေပါတယ်။"
 
 
 def safe_file_stem(file_name: str) -> str:
@@ -149,3 +150,42 @@ def generate_for_user(
         created_at=datetime.now(timezone.utc).isoformat(),
     )
     return GenerationResult(mp3_path=mp3_path, srt_path=srt_path, message="Generated MP3 and SRT.")
+
+
+def generate_voice_preview(
+    output_dir: Path,
+    engine: str,
+    voice_label: str,
+    rate: int | float,
+    pitch: int | float,
+    volume_boost: int | float,
+    emotion: str,
+    api_key: str,
+    gemini_model: str,
+    tts_func: TtsFunc = generate_mp3,
+    gemini_tts_func: GeminiTtsFunc = generate_gemini_mp3,
+) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+    mp3_path = output_dir / f"voice_preview_{stamp}.mp3"
+
+    if engine == "Gemini API (Key Required)":
+        if not api_key.strip():
+            raise ValueError("Gemini API Key required for Gemini voice preview.")
+        gemini_tts_func(
+            VOICE_PREVIEW_TEXT,
+            mp3_path,
+            gemini_voice_id_for_label(voice_label),
+            gemini_model_id_for_label(gemini_model),
+            api_key.strip(),
+            emotion,
+        )
+    else:
+        tts_func(
+            VOICE_PREVIEW_TEXT,
+            mp3_path,
+            edge_voice_id_for_label(voice_label),
+            edge_rate(rate),
+        )
+
+    return mp3_path

@@ -30,6 +30,29 @@ def test_generator_contains_premium_tts_controls(tmp_path, monkeypatch):
     assert "Volume Booster (+dB)" in labels
 
 
+def test_generator_default_file_name_is_james_ttsrt(tmp_path, monkeypatch):
+    monkeypatch.setenv("JAMES_WEB_DATA_DIR", str(tmp_path))
+
+    app = build_app()
+    file_name_components = [
+        component
+        for component in app.blocks.values()
+        if getattr(component, "label", None) == "သိမ်းမယ့်ဖိုင် နာမည် (File Name)"
+    ]
+
+    assert file_name_components
+    assert getattr(file_name_components[0], "value", None) == "James_TTSrt"
+
+
+def test_generator_has_voice_preview_audio(tmp_path, monkeypatch):
+    monkeypatch.setenv("JAMES_WEB_DATA_DIR", str(tmp_path))
+
+    app = build_app()
+    labels = {getattr(component, "label", None) for component in app.blocks.values()}
+
+    assert "Voice Preview" in labels
+
+
 def test_free_marketing_tool_controls_are_present(tmp_path, monkeypatch):
     monkeypatch.setenv("JAMES_WEB_DATA_DIR", str(tmp_path))
 

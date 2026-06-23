@@ -3,6 +3,7 @@ from pathlib import Path
 from james_web_tool.admin import create_paid_user
 from james_web_tool.database import create_user, init_db, list_users
 from james_web_tool.generator import generate_for_user
+from james_web_tool.generator import generate_voice_preview
 from james_web_tool.models import PlanGrant, PlanTier
 
 
@@ -200,3 +201,94 @@ def test_gemini_engine_routes_to_gemini_voice_model_and_api_key(tmp_path):
     assert calls["model_id"] == "gemini-3.1-flash-tts-preview"
     assert calls["api_key"] == "secret-key"
     assert calls["emotion"] == "Excited (စိတ်လှုပ်ရှား)"
+
+
+def test_generate_voice_preview_uses_edge_voice_and_rate(tmp_path):
+    calls = {}
+
+    def capture_tts(text: str, mp3_path: Path, voice_id: str, rate: str = "+0%") -> float:
+        calls["text"] = text
+        calls["voice_id"] = voice_id
+        calls["rate"] = rate
+        mp3_path.write_bytes(b"fake edge preview")
+        return 1.0
+
+    preview_path = generate_voice_preview(
+        output_dir=tmp_path,
+        engine="Free Edge TTS",
+        voice_label="အကိုလေး",
+        rate=40,
+        pitch=0,
+        volume_boost=10,
+        emotion="Movie Recap (ဇာတ်လမ်းပြော)",
+        api_key="",
+        gemini_model="Gemini 3.1 Flash",
+        tts_func=capture_tts,
+        gemini_tts_func=fake_gemini_tts,
+    )
+
+    assert preview_path.exists()
+    assert calls["voice_id"] == "my-MM-ThihaNeural"
+    assert calls["rate"] == "+40%"
+    assert "မင်္ဂလာပါ" in calls["text"]
+
+
+def test_generate_voice_preview_uses_gemini_voice_model_and_key(tmp_path):
+    calls = {}
+
+    def capture_gemini_tts(
+        text: str,
+        mp3_path: Path,
+        voice_id: str,
+        model_id: str,
+        api_key: str,
+        emotion: str,
+    ) -> float:
+        calls["text"] = text
+        calls["voice_id"] = voice_id
+        calls["model_id"] = model_id
+        calls["api_key"] = api_key
+        calls["emotion"] = emotion
+        mp3_path.write_bytes(b"fake gemini preview")
+        return 1.0
+
+    preview_path = generate_voice_preview(
+        output_dir=tmp_path,
+        engine="Gemini API (Key Required)",
+        voice_label="Aoede (မ - လွတ်လပ်ပေါ့ပါး)",
+        rate=40,
+        pitch=0,
+        volume_boost=10,
+        emotion="Excited (စိတ်လှုပ်ရှား)",
+        api_key="secret-key",
+        gemini_model="Gemini 3.1 Flash",
+        tts_func=fake_tts,
+        gemini_tts_func=capture_gemini_tts,
+    )
+
+    assert preview_path.exists()
+    assert calls["voice_id"] == "Aoede"
+    assert calls["model_id"] == "gemini-3.1-flash-tts-preview"
+    assert calls["api_key"] == "secret-key"
+    assert calls["emotion"] == "Excited (စိတ်လှုပ်ရှား)"
+
+
+def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
+    try:
+        generate_voice_preview(
+            output_dir=tmp_path,
+            engine="Gemini API (Key Required)",
+            voice_label="Aoede (မ - လွတ်လပ်ပေါ့ပါး)",
+            rate=40,
+            pitch=0,
+            volume_boost=10,
+            emotion="Movie Recap (ဇာတ်လမ်းပြော)",
+            api_key="",
+            gemini_model="Gemini 3.1 Flash",
+            tts_func=fake_tts,
+            gemini_tts_func=fake_gemini_tts,
+        )
+    except ValueError as exc:
+        assert "Gemini API Key required" in str(exc)
+    else:
+        raise AssertionError("Expected missing Gemini API key error")

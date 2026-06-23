@@ -10,7 +10,7 @@ import base64
 
 from .config import APP_NAME, default_db_path, default_logo_path, default_output_dir
 from .database import create_user, get_user_by_pin, init_db, list_users, search_users
-from .generator import generate_for_user
+from .generator import generate_for_user, generate_voice_preview
 from .models import PlanGrant, PlanTier, edge_voice_options, emotion_options, gemini_voice_options, voice_display_options
 
 CSS = """
@@ -214,13 +214,14 @@ def build_app() -> gr.Blocks:
                         placeholder="ဥပမာ - Myanmar_TTSaa => မြန်မာ တီတီအက်စ်အေ",
                     )
 
-                file_name = gr.Textbox(value="Myanmar_TTSaa", label="သိမ်းမယ့်ဖိုင် နာမည် (File Name)")
+                file_name = gr.Textbox(value="James_TTSrt", label="သိမ်းမယ့်ဖိုင် နာမည် (File Name)")
                 voice = gr.Dropdown(
                     choices=list(edge_voice_options().keys()),
                     value="အကိုလေး ( 🇲🇲 - ကျား)",
                     label="[VIP] Voice",
                 )
-                gr.Button("🔊 အသံ (Voice) အသံစမ်းနားထောင်မည်")
+                preview_voice_btn = gr.Button("🔊 အသံ (Voice) အသံစမ်းနားထောင်မည်")
+                voice_preview = gr.Audio(label="Voice Preview", autoplay=True)
 
                 with gr.Row():
                     emotion = gr.Dropdown(
@@ -302,6 +303,38 @@ def build_app() -> gr.Blocks:
         )
 
         tts_engine.change(voice_dropdown_for_engine, inputs=[tts_engine], outputs=[voice])
+
+        def do_voice_preview(
+            engine: str,
+            key: str,
+            gemini_model_label: str,
+            voice_label: str,
+            emotion_label: str,
+            pitch_value: int | float,
+            rate_value: int | float,
+            volume_value: int | float,
+        ):
+            try:
+                preview_path = generate_voice_preview(
+                    output_dir,
+                    engine,
+                    voice_label,
+                    rate_value,
+                    pitch_value,
+                    volume_value,
+                    emotion_label,
+                    key,
+                    gemini_model_label,
+                )
+            except Exception as exc:
+                raise gr.Error(str(exc)) from exc
+            return str(preview_path)
+
+        preview_voice_btn.click(
+            do_voice_preview,
+            inputs=[tts_engine, api_key, gemini_model, voice, emotion, pitch, rate, volume_boost],
+            outputs=[voice_preview],
+        )
 
         def do_free_generate(text: str, voice_label: str, fmt: str):
             free_user_id = ensure_free_user(db_path)
