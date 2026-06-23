@@ -207,94 +207,94 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                 forget_admin_btn = gr.Button("Forget saved admin login")
                 login_status = gr.Markdown("Login ဝင်ရန် PIN ထည့်ပါ။")
 
-            with gr.Column(visible=False) as admin_panel:
-                admin_panel_marker = gr.Textbox(label="Admin Panel", visible=False)
-                admin_status = gr.Markdown("Admin login required.")
-                with gr.Row():
-                    new_pin = gr.Textbox(label="New User PIN")
-                    plan = gr.Dropdown(
-                        choices=["1 month", "3 months", "6 months", "1 year", "lifetime"],
-                        value="1 month",
-                        label="Plan",
-                    )
-                    create_btn = gr.Button("Create / Grant User", variant="primary")
-                search = gr.Textbox(label="Search User ID or PIN")
-                refresh_btn = gr.Button("Refresh Users")
-                users = gr.Dataframe(headers=["User ID", "PIN", "Plan", "Expires", "Status", "Jobs"], datatype=["str"] * 6)
-                selected_user_id = gr.Textbox(label="Target User ID")
-                with gr.Row():
-                    grant_1m = gr.Button("Grant 1M VIP")
-                    grant_3m = gr.Button("Grant 3M VIP")
-                    grant_6m = gr.Button("Grant 6M VIP")
-                    grant_1y = gr.Button("Grant 1Y VIP")
-                    grant_life = gr.Button("Grant Lifetime")
-                with gr.Row():
-                    revoke_btn = gr.Button("Revoke")
-                    disable_btn = gr.Button("Disable")
-                    delete_btn = gr.Button("Delete User")
+            with gr.Column(visible=False) as authenticated_area:
+                current_user = gr.Markdown("Not logged in")
+                transcript = gr.Textbox(label="Myanmar Transcript", lines=12)
 
-        with gr.Tab("Generator") as generator_tab:
-            current_user = gr.Markdown("Not logged in")
-            transcript = gr.Textbox(label="Myanmar Transcript", lines=12)
+                with gr.Group(elem_classes=["premium-panel"]):
+                    gr.Markdown("### 🎙️ Myanmar Multi-Speaker TTS & SRT Generator")
+                    with gr.Row():
+                        tts_engine = gr.Radio(
+                            choices=["Free Edge TTS", "Gemini API (Key Required)"],
+                            value="Free Edge TTS",
+                            label="TTS Engine",
+                        )
+                        api_key = gr.Textbox(
+                            label="Gemini API Key",
+                            type="password",
+                            placeholder="Enter your API Key...",
+                        )
+                        gemini_model = gr.Radio(
+                            choices=["Gemini 3.1 Flash", "Gemini 2.5 Flash"],
+                            value="Gemini 3.1 Flash",
+                            label="Gemini Model",
+                        )
 
-            with gr.Group(elem_classes=["premium-panel"]):
-                gr.Markdown("### 🎙️ Myanmar Multi-Speaker TTS & SRT Generator")
-                with gr.Row():
-                    tts_engine = gr.Radio(
-                        choices=["Free Edge TTS", "Gemini API (Key Required)"],
-                        value="Free Edge TTS",
-                        label="TTS Engine",
-                    )
-                    api_key = gr.Textbox(
-                        label="Gemini API Key",
-                        type="password",
-                        placeholder="Enter your API Key...",
-                    )
-                    gemini_model = gr.Radio(
-                        choices=["Gemini 3.1 Flash", "Gemini 2.5 Flash"],
-                        value="Gemini 3.1 Flash",
-                        label="Gemini Model",
-                    )
+                with gr.Group(elem_classes=["premium-subpanel"]):
+                    with gr.Accordion("Pronunciation Rules (အသံထွက်ပြင်ဆင်ရန်)", open=True):
+                        pronunciation_rules = gr.Textbox(
+                            label="Pronunciation Rules (အသံထွက်ပြင်ဆင်ရန်)",
+                            lines=3,
+                            placeholder="ဥပမာ - Myanmar_TTSaa => မြန်မာ တီတီအက်စ်အေ",
+                        )
 
-            with gr.Group(elem_classes=["premium-subpanel"]):
-                with gr.Accordion("Pronunciation Rules (အသံထွက်ပြင်ဆင်ရန်)", open=True):
-                    pronunciation_rules = gr.Textbox(
-                        label="Pronunciation Rules (အသံထွက်ပြင်ဆင်ရန်)",
-                        lines=3,
-                        placeholder="ဥပမာ - Myanmar_TTSaa => မြန်မာ တီတီအက်စ်အေ",
+                    file_name = gr.Textbox(value="James_TTSrt", label="သိမ်းမယ့်ဖိုင် နာမည် (File Name)")
+                    voice = gr.Dropdown(
+                        choices=list(edge_voice_options().keys()),
+                        value="မြန်မာကျား ၁",
+                        label="[VIP] Voice",
                     )
+                    preview_voice_btn = gr.Button("🔊 အသံ (Voice) အသံစမ်းနားထောင်မည်")
+                    voice_preview = gr.Audio(label="Voice Preview", autoplay=True)
 
-                file_name = gr.Textbox(value="James_TTSrt", label="သိမ်းမယ့်ဖိုင် နာမည် (File Name)")
-                voice = gr.Dropdown(
-                    choices=list(edge_voice_options().keys()),
-                    value="မြန်မာကျား ၁",
-                    label="[VIP] Voice",
-                )
-                preview_voice_btn = gr.Button("🔊 အသံ (Voice) အသံစမ်းနားထောင်မည်")
-                voice_preview = gr.Audio(label="Voice Preview", autoplay=True)
+                    with gr.Row():
+                        emotion = gr.Dropdown(
+                            choices=emotion_options(),
+                            value="Movie Recap (ဇာတ်လမ်းပြော)",
+                            label="ခံစားမှု / အသံပုံစံ (Emotion)",
+                        )
+                        srt_format = gr.Radio(
+                            choices=["Single Line", "2 Lines", "YouTube"],
+                            value="Single Line",
+                            label="SRT Format Type",
+                        )
 
-                with gr.Row():
-                    emotion = gr.Dropdown(
-                        choices=emotion_options(),
-                        value="Movie Recap (ဇာတ်လမ်းပြော)",
-                        label="ခံစားမှု / အသံပုံစံ (Emotion)",
-                    )
-                    srt_format = gr.Radio(
-                        choices=["Single Line", "2 Lines", "YouTube"],
-                        value="Single Line",
-                        label="SRT Format Type",
-                    )
+                    with gr.Accordion("Advanced Settings (အသံ အမြန်နှုန်း/အသံအနိမ့်အမြင့်)", open=True):
+                        pitch = gr.Slider(-50, 50, value=0, step=1, label="Base Tone (Pitch)")
+                        rate = gr.Slider(-50, 100, value=40, step=1, label="Base Speed (Rate)")
+                        volume_boost = gr.Slider(0, 20, value=10, step=1, label="Volume Booster (+dB)")
 
-                with gr.Accordion("Advanced Settings (အသံ အမြန်နှုန်း/အသံအနိမ့်အမြင့်)", open=True):
-                    pitch = gr.Slider(-50, 50, value=0, step=1, label="Base Tone (Pitch)")
-                    rate = gr.Slider(-50, 100, value=40, step=1, label="Base Speed (Rate)")
-                    volume_boost = gr.Slider(0, 20, value=10, step=1, label="Volume Booster (+dB)")
+                generate_btn = gr.Button("Generate MP3 & SRT", variant="primary")
+                generate_status = gr.Markdown("")
+                audio_out = gr.Audio(label="Output Audio")
+                mp3_file = gr.File(label="MP3 Download")
+                srt_file = gr.File(label="SRT Download")
 
-            generate_btn = gr.Button("Generate MP3 & SRT", variant="primary")
-            generate_status = gr.Markdown("")
-            audio_out = gr.Audio(label="Output Audio")
-            mp3_file = gr.File(label="MP3 Download")
-            srt_file = gr.File(label="SRT Download")
+                with gr.Column(visible=False) as admin_panel:
+                    admin_panel_marker = gr.Textbox(label="Admin Panel", visible=False)
+                    admin_status = gr.Markdown("Admin login required.")
+                    with gr.Row():
+                        new_pin = gr.Textbox(label="New User PIN")
+                        plan = gr.Dropdown(
+                            choices=["1 month", "3 months", "6 months", "1 year", "lifetime"],
+                            value="1 month",
+                            label="Plan",
+                        )
+                        create_btn = gr.Button("Create / Grant User", variant="primary")
+                    search = gr.Textbox(label="Search User ID or PIN")
+                    refresh_btn = gr.Button("Refresh Users")
+                    users = gr.Dataframe(headers=["User ID", "PIN", "Plan", "Expires", "Status", "Jobs"], datatype=["str"] * 6)
+                    selected_user_id = gr.Textbox(label="Target User ID")
+                    with gr.Row():
+                        grant_1m = gr.Button("Grant 1M VIP")
+                        grant_3m = gr.Button("Grant 3M VIP")
+                        grant_6m = gr.Button("Grant 6M VIP")
+                        grant_1y = gr.Button("Grant 1Y VIP")
+                        grant_life = gr.Button("Grant Lifetime")
+                    with gr.Row():
+                        revoke_btn = gr.Button("Revoke")
+                        disable_btn = gr.Button("Disable")
+                        delete_btn = gr.Button("Delete User")
 
         def admin_unlocked_outputs(message: str, memory: dict | None = None):
             return (
@@ -307,12 +307,13 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                 _users_table(list_users(db_path)),
                 memory or {},
                 gr.update(visible=False),
+                gr.update(visible=True),
             )
 
         def do_login(pin_value: str, remember_value: bool):
             result = login_with_pin(db_path, pin_value)
             if not result.ok:
-                return result.message, "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True)
+                return result.message, "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True), gr.update(visible=False)
             admin_text = "Admin panel ready." if result.is_admin else "Admin login required."
             user = get_user_by_pin(db_path, pin_value.strip()) if not result.is_admin else None
             user_text = (
@@ -331,6 +332,7 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                 _users_table(list_users(db_path)) if result.is_admin else [],
                 memory,
                 gr.update(visible=False),
+                gr.update(visible=True),
             )
 
         login_btn.click(
@@ -342,7 +344,7 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
         def restore_saved_admin(memory: dict | None):
             if should_restore_admin(memory):
                 return admin_unlocked_outputs("Saved admin login restored.", memory)
-            return "", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True)
+            return "", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True), gr.update(visible=False)
 
         app.load(
             restore_saved_admin,
@@ -351,7 +353,7 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
         )
 
         def forget_saved_admin():
-            return "Saved admin login cleared.", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True)
+            return "Saved admin login cleared.", "", False, "Not logged in", gr.update(visible=False), "Admin login required.", [], {}, gr.update(visible=True), gr.update(visible=False)
 
         forget_admin_btn.click(
             forget_saved_admin,
