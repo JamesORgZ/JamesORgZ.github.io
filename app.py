@@ -13,8 +13,11 @@ os.environ.setdefault("JAMES_WEB_DATA_DIR", str(Path(__file__).resolve().parent 
 from james_web_tool.ui import build_app, launch_kwargs_from_env
 
 
-demo = build_app().queue()
+demo = build_app().queue(api_open=False)
 
 
 if __name__ == "__main__":
-    demo.launch(**launch_kwargs_from_env())
+    launch_kwargs = launch_kwargs_from_env()
+    if os.getenv("SPACE_ID"):
+        launch_kwargs["share"] = True
+    demo.launch(**launch_kwargs)

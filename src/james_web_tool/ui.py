@@ -464,7 +464,7 @@ def build_app() -> gr.Blocks:
 
 
 def main() -> None:
-    build_app().queue().launch(**launch_kwargs_from_env())
+    build_app().queue(api_open=False).launch(**launch_kwargs_from_env())
 
 
 def launch_kwargs_from_env() -> dict[str, int | str]:
