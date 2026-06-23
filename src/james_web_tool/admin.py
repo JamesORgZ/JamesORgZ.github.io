@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from .database import create_user, delete_user_by_id, get_user_by_id, update_user
+from .database import create_user, delete_user_by_id, get_user_by_id, get_user_by_telegram_id, update_user
 from .models import PlanGrant, PlanTier
 
 
@@ -13,10 +13,20 @@ def expiry_for_grant(grant: PlanGrant) -> str | None:
     return (datetime.now(timezone.utc) + timedelta(days=grant.days)).isoformat()
 
 
-def create_paid_user(db_path: Path, pin: str, grant: PlanGrant) -> dict:
+def create_paid_user(db_path: Path, pin: str, grant: PlanGrant, telegram_user_id: int | str | None = None) -> dict:
     if not pin.strip():
         raise ValueError("New User PIN required.")
-    return create_user(db_path, pin=pin, plan_tier=grant.tier, expires_at=expiry_for_grant(grant))
+    if telegram_user_id is not None:
+        existing = get_user_by_telegram_id(db_path, telegram_user_id)
+        if existing is not None:
+            return grant_plan(db_path, existing["user_id"], grant)
+    return create_user(
+        db_path,
+        pin=pin,
+        plan_tier=grant.tier,
+        expires_at=expiry_for_grant(grant),
+        telegram_user_id=str(telegram_user_id) if telegram_user_id is not None else None,
+    )
 
 
 def require_target_user(db_path: Path, user_id: str) -> dict:

@@ -115,6 +115,18 @@ def test_create_pin_for_plan_creates_paid_user(tmp_path):
     assert get_user_by_pin(db_path, "111222")["user_id"] == user["user_id"]
 
 
+def test_create_pin_for_plan_reuses_same_pin_for_same_telegram_user(tmp_path):
+    db_path = tmp_path / "app.sqlite3"
+    init_db(db_path)
+
+    first = create_pin_for_plan(db_path, "1m", telegram_user_id=2037708908, pin_factory=lambda: "111222")
+    second = create_pin_for_plan(db_path, "3m", telegram_user_id=2037708908, pin_factory=lambda: "333444")
+
+    assert second["user_id"] == first["user_id"]
+    assert second["pin"] == "111222"
+    assert second["plan_tier"] == PlanTier.VIP.value
+
+
 def test_webhook_application_processes_start_message(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     fake_api = FakeApi()
@@ -232,3 +244,28 @@ def test_admin_approve_sends_active_pin_and_website_link(tmp_path):
     assert "Login PIN:" in user_message
     assert WEBSITE_URL in user_message
     assert "active" in user_message.lower()
+
+
+def test_admin_approve_reuses_same_pin_for_repeat_buyer(tmp_path):
+    db_path = tmp_path / "app.sqlite3"
+    fake_api = FakeApi()
+    callback_1m = {
+        "id": "cb4",
+        "data": "approve:1m:2037708908",
+        "from": {"id": 5749918762, "username": "JamesOrg"},
+        "message": {"chat": {"id": 5749918762}},
+    }
+    callback_3m = {
+        "id": "cb5",
+        "data": "approve:3m:2037708908",
+        "from": {"id": 5749918762, "username": "JamesOrg"},
+        "message": {"chat": {"id": 5749918762}},
+    }
+
+    handle_callback(fake_api, db_path, 5749918762, callback_1m)
+    first_pin = fake_api.sent_messages[0][1].split("Login PIN: ", 1)[1].splitlines()[0]
+    handle_callback(fake_api, db_path, 5749918762, callback_3m)
+    second_pin = fake_api.sent_messages[1][1].split("Login PIN: ", 1)[1].splitlines()[0]
+
+    assert second_pin == first_pin
+    assert get_user_by_pin(db_path, first_pin)["telegram_user_id"] == "2037708908"

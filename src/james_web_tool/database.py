@@ -23,6 +23,7 @@ def init_db(db_path: Path) -> None:
             CREATE TABLE IF NOT EXISTS users (
                 user_id TEXT PRIMARY KEY,
                 pin TEXT NOT NULL UNIQUE,
+                telegram_user_id TEXT UNIQUE,
                 plan_tier TEXT NOT NULL,
                 expires_at TEXT,
                 status TEXT NOT NULL DEFAULT 'active',
@@ -42,6 +43,16 @@ def init_db(db_path: Path) -> None:
             );
             """
         )
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+        if "telegram_user_id" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN telegram_user_id TEXT")
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_users_telegram_user_id
+            ON users(telegram_user_id)
+            WHERE telegram_user_id IS NOT NULL
+            """
+        )
 
 
 def row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
@@ -50,15 +61,21 @@ def row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
     return dict(row)
 
 
-def create_user(db_path: Path, pin: str, plan_tier: PlanTier, expires_at: str | None) -> dict[str, Any]:
+def create_user(
+    db_path: Path,
+    pin: str,
+    plan_tier: PlanTier,
+    expires_at: str | None,
+    telegram_user_id: str | None = None,
+) -> dict[str, Any]:
     user_id = f"J-{uuid.uuid4().hex[:6].upper()}"
     with connect(db_path) as conn:
         conn.execute(
             """
-            INSERT INTO users (user_id, pin, plan_tier, expires_at, status)
-            VALUES (?, ?, ?, ?, 'active')
+            INSERT INTO users (user_id, pin, telegram_user_id, plan_tier, expires_at, status)
+            VALUES (?, ?, ?, ?, ?, 'active')
             """,
-            (user_id, pin, plan_tier.value, expires_at),
+            (user_id, pin, telegram_user_id, plan_tier.value, expires_at),
         )
     user = get_user_by_pin(db_path, pin)
     assert user is not None
@@ -101,6 +118,12 @@ def get_user_by_pin(db_path: Path, pin: str) -> dict[str, Any] | None:
 def get_user_by_id(db_path: Path, user_id: str) -> dict[str, Any] | None:
     with connect(db_path) as conn:
         row = conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    return row_to_dict(row)
+
+
+def get_user_by_telegram_id(db_path: Path, telegram_user_id: int | str) -> dict[str, Any] | None:
+    with connect(db_path) as conn:
+        row = conn.execute("SELECT * FROM users WHERE telegram_user_id = ?", (str(telegram_user_id),)).fetchone()
     return row_to_dict(row)
 
 
@@ -151,7 +174,7 @@ def list_users(db_path: Path) -> list[dict[str, Any]]:
 
 
 def update_user(db_path: Path, user_id: str, **fields: str | None) -> None:
-    allowed = {"pin", "plan_tier", "expires_at", "status"}
+    allowed = {"pin", "telegram_user_id", "plan_tier", "expires_at", "status"}
     updates = {key: value for key, value in fields.items() if key in allowed}
     if not updates:
         return

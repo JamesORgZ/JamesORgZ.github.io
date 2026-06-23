@@ -54,13 +54,19 @@ def generate_unique_pin(db_path: Path, pin_factory: Callable[[], str] = default_
 def create_pin_for_plan(
     db_path: Path,
     plan_key: str,
+    telegram_user_id: int | str | None = None,
     pin_factory: Callable[[], str] = default_pin_factory,
 ) -> dict[str, Any]:
     if plan_key not in PLAN_OPTIONS:
         raise ValueError(f"Unknown plan: {plan_key}")
     init_db(db_path)
     pin = generate_unique_pin(db_path, pin_factory=pin_factory)
-    return create_paid_user(db_path, pin=pin, grant=PLAN_OPTIONS[plan_key].grant)
+    return create_paid_user(
+        db_path,
+        pin=pin,
+        grant=PLAN_OPTIONS[plan_key].grant,
+        telegram_user_id=telegram_user_id,
+    )
 
 
 def plan_keyboard() -> dict[str, Any]:
@@ -207,7 +213,7 @@ def handle_callback(api: TelegramApi, db_path: Path, admin_id: int, callback: di
             api.answer_callback(callback_id, "Admin only.")
             return
         _, plan_key, user_chat_id = data.split(":", 2)
-        user = create_pin_for_plan(db_path, plan_key)
+        user = create_pin_for_plan(db_path, plan_key, telegram_user_id=user_chat_id)
         option = PLAN_OPTIONS[plan_key]
         api.send_message(
             user_chat_id,
