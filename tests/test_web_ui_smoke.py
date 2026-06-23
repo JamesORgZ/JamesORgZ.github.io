@@ -1,4 +1,5 @@
 from james_web_tool.ui import build_app
+from james_web_tool import ui
 
 
 def test_build_app_returns_gradio_blocks(tmp_path, monkeypatch):
@@ -59,3 +60,11 @@ def test_admin_panel_is_not_a_public_top_level_tab(tmp_path, monkeypatch):
     assert "Delete User" in button_values
     assert "Remember admin on this browser" in labels
     assert "Forget saved admin login" in button_values
+
+
+def test_browser_state_falls_back_to_session_state(monkeypatch):
+    monkeypatch.delattr(ui.gr, "BrowserState", raising=False)
+
+    state = ui.browser_state_or_session_state({})
+
+    assert state.__class__.__name__ == "State"

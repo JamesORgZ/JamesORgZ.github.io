@@ -124,7 +124,7 @@ def build_app() -> gr.Blocks:
     with gr.Blocks(title=APP_NAME) as app:
         session_user_id = gr.State("")
         session_is_admin = gr.State(False)
-        admin_memory = gr.BrowserState({})
+        admin_memory = browser_state_or_session_state({})
 
         gr.HTML(
             f"""
@@ -472,3 +472,10 @@ def launch_kwargs_from_env() -> dict[str, int | str]:
         "server_name": os.getenv("GRADIO_SERVER_NAME", "0.0.0.0"),
         "server_port": int(os.getenv("PORT", os.getenv("GRADIO_SERVER_PORT", "7860"))),
     }
+
+
+def browser_state_or_session_state(default_value: dict):
+    browser_state_cls = getattr(gr, "BrowserState", None)
+    if browser_state_cls is not None:
+        return browser_state_cls(default_value)
+    return gr.State(default_value)
