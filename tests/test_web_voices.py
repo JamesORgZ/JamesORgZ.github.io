@@ -5,14 +5,14 @@ def test_voice_options_include_sample_tool_v1_names():
     voices = voice_display_options()
 
     for label in [
-        "James Hero MM-01 (Male)",
-        "James Velvet MM-02 (Female)",
-        "James Cinema MM-03 (Male)",
-        "James Pearl MM-04 (Female)",
-        "James Pulse US-01 (Male)",
-        "James Luna US-02 (Female)",
-        "James Royal UK-01 (Male)",
-        "James Rose UK-02 (Female)",
+        "မြန်မာကျား ၁",
+        "မြန်မာမ ၂",
+        "ဇာတ်လိုက်ကျား ၃",
+        "ပုလဲဖြူမ ၄",
+        "အမေရိကန်ကျား ၁",
+        "အမေရိကန်မ ၂",
+        "ဗြိတိန်ကျား ၁",
+        "ဗြိတိန်မ ၂",
     ]:
         assert label in voices
 
@@ -21,10 +21,10 @@ def test_voice_options_include_sample_tool_gemini_names():
     voices = gemini_voice_options()
 
     for label in [
-        "James Nova G-01 (Female)",
-        "James Anchor G-06 (Male)",
-        "James Spark G-10 (Male)",
-        "James Titan G-30 (Male)",
+        "ကြယ်နု ၁",
+        "သတင်းကျား ၆",
+        "ပျော်ရွှင်ကျား ၁၀",
+        "ထူးခြားကျား ၃၀",
     ]:
         assert label in voices
 
@@ -32,8 +32,8 @@ def test_voice_options_include_sample_tool_gemini_names():
 def test_edge_voice_options_do_not_include_gemini_only_voices():
     voices = edge_voice_options()
 
-    assert "James Hero MM-01 (Male)" in voices
-    assert "James Nova G-01 (Female)" not in voices
+    assert "မြန်မာကျား ၁" in voices
+    assert "ကြယ်နု ၁" not in voices
 
 
 def test_old_sample_tool_voice_names_are_not_displayed():
@@ -68,3 +68,5 @@ def test_emotion_options_include_sample_tool_styles():
         "Sarcastic/Funny (ဟာသ/နောက်ပြောင်)",
         "Documentary (မှတ်တမ်းရုပ်ရှင်)",
     ]
+
+

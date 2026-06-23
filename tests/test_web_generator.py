@@ -35,7 +35,7 @@ def test_generate_for_user_writes_mp3_srt_and_records_job(tmp_path):
         output_dir=output_dir,
         user_id=user["user_id"],
         text="မင်္ဂလာပါ။ နေကောင်းလား။",
-        voice_label="James Velvet MM-02 (Female)",
+        voice_label="မြန်မာမ ၂",
         srt_format="2 Lines",
         file_name="test_output",
         tts_func=fake_tts,
@@ -68,7 +68,7 @@ def test_generate_for_user_applies_pronunciation_rules_and_rate(tmp_path):
         output_dir=output_dir,
         user_id=user["user_id"],
         text="Myanmar_TTSaa စမ်းသပ်မယ်။",
-        voice_label="James Hero MM-01 (Male)",
+        voice_label="မြန်မာကျား ၁",
         srt_format="YouTube",
         file_name="unsafe:/name",
         pronunciation_rules="Myanmar_TTSaa => မြန်မာ တီတီအက်စ်အေ",
@@ -100,7 +100,7 @@ def test_free_user_is_limited_to_short_basic_generation(tmp_path):
             output_dir=output_dir,
             user_id=user["user_id"],
             text="က" * 501,
-            voice_label="James Velvet MM-02 (Female)",
+            voice_label="မြန်မာမ ၂",
             srt_format="Single Line",
             file_name="free_output",
             tts_func=fake_tts,
@@ -123,7 +123,7 @@ def test_vip_cannot_use_vvip_only_features(tmp_path):
             output_dir=output_dir,
             user_id=user["user_id"],
             text="မင်္ဂလာပါ။",
-            voice_label="James Velvet MM-02 (Female)",
+            voice_label="မြန်မာမ ၂",
             srt_format="YouTube",
             file_name="vip_output",
             pronunciation_rules="မင်္ဂလာပါ => မင်္ဂလာပါ",
@@ -146,7 +146,7 @@ def test_vvip_can_use_pronunciation_rules_and_youtube_format(tmp_path):
         output_dir=output_dir,
         user_id=user["user_id"],
         text="James စမ်းမယ်။",
-        voice_label="James Velvet MM-02 (Female)",
+        voice_label="မြန်မာမ ၂",
         srt_format="YouTube",
         file_name="vvip_output",
         pronunciation_rules="James => ဂျိမ်းစ်",
@@ -185,7 +185,7 @@ def test_gemini_engine_routes_to_gemini_voice_model_and_api_key(tmp_path):
         output_dir=output_dir,
         user_id=user["user_id"],
         text="မင်္ဂလာပါ။",
-        voice_label="James Nova G-01 (Female)",
+        voice_label="ကြယ်နု ၁",
         srt_format="Single Line",
         file_name="gemini_output",
         emotion="Excited (စိတ်လှုပ်ရှား)",
@@ -216,7 +216,7 @@ def test_generate_voice_preview_uses_edge_voice_and_rate(tmp_path):
     preview_path = generate_voice_preview(
         output_dir=tmp_path,
         engine="Free Edge TTS",
-        voice_label="James Hero MM-01 (Male)",
+        voice_label="မြန်မာကျား ၁",
         rate=40,
         pitch=0,
         volume_boost=10,
@@ -234,15 +234,15 @@ def test_generate_voice_preview_uses_edge_voice_and_rate(tmp_path):
 
 
 def test_voice_preview_text_mentions_selected_edge_voice_name():
-    text = voice_preview_text("James Hero MM-01 (Male)")
+    text = voice_preview_text("မြန်မာကျား ၁")
 
-    assert text == "မင်္ဂလာပါ။ ကျွန်တော်ကတော့ James Hero MM-01ပါ။ စာကနေအသံပြောင်းပေးမှာဖြစ်ပါတယ်။"
+    assert text == "မင်္ဂလာပါ။ ကျွန်တော်ကတော့ မြန်မာကျား ၁ပါ။ စာကနေအသံပြောင်းပေးမှာဖြစ်ပါတယ်။"
 
 
 def test_voice_preview_text_strips_voice_description():
-    text = voice_preview_text("James Hero MM-01 (Male)")
+    text = voice_preview_text("မြန်မာကျား ၁")
 
-    assert "James Hero MM-01ပါ" in text
+    assert "မြန်မာကျား ၁ပါ" in text
     assert "Male" not in text
     assert "Female" not in text
 
@@ -269,7 +269,7 @@ def test_generate_voice_preview_uses_gemini_voice_model_and_key(tmp_path):
     preview_path = generate_voice_preview(
         output_dir=tmp_path,
         engine="Gemini API (Key Required)",
-        voice_label="James Nova G-01 (Female)",
+        voice_label="ကြယ်နု ၁",
         rate=40,
         pitch=0,
         volume_boost=10,
@@ -285,7 +285,7 @@ def test_generate_voice_preview_uses_gemini_voice_model_and_key(tmp_path):
     assert calls["model_id"] == "gemini-3.1-flash-tts-preview"
     assert calls["api_key"] == "secret-key"
     assert calls["emotion"] == "Excited (စိတ်လှုပ်ရှား)"
-    assert "James Nova G-01ပါ" in calls["text"]
+    assert "ကြယ်နု ၁ပါ" in calls["text"]
 
 
 def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
@@ -293,7 +293,7 @@ def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
         generate_voice_preview(
             output_dir=tmp_path,
             engine="Gemini API (Key Required)",
-            voice_label="James Nova G-01 (Female)",
+            voice_label="ကြယ်နု ၁",
             rate=40,
             pitch=0,
             volume_boost=10,
@@ -307,4 +307,6 @@ def test_generate_voice_preview_requires_gemini_api_key(tmp_path):
         assert "Gemini API Key required" in str(exc)
     else:
         raise AssertionError("Expected missing Gemini API key error")
+
+
 

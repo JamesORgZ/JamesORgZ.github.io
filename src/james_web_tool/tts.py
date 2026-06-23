@@ -22,21 +22,21 @@ GEMINI_MODEL_IDS = {
 def voice_id_for_label(label: str) -> str:
     voices = voice_display_options()
     if label not in voices:
-        return voices["James Velvet MM-02 (Female)"]
+        return voices["မြန်မာမ ၂"]
     return voices[label]
 
 
 def edge_voice_id_for_label(label: str) -> str:
     voices = edge_voice_options()
     if label not in voices:
-        return voices["James Velvet MM-02 (Female)"]
+        return voices["မြန်မာမ ၂"]
     return voices[label]
 
 
 def gemini_voice_id_for_label(label: str) -> str:
     voices = gemini_voice_options()
     if label not in voices:
-        return voices["James Nova G-01 (Female)"]
+        return voices["ကြယ်နု ၁"]
     return voices[label]
 
 
@@ -130,3 +130,5 @@ def generate_gemini_mp3(
     if not mp3_path.exists() or mp3_path.stat().st_size == 0:
         raise RuntimeError("Gemini TTS failed to create MP3 output.")
     return media_duration_seconds(mp3_path)
+
+

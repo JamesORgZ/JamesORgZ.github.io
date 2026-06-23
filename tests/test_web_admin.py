@@ -54,7 +54,7 @@ def test_delete_user_removes_user_and_jobs(tmp_path):
         db_path,
         user_id=user["user_id"],
         input_chars=10,
-        voice_label="James Velvet MM-02 (Female)",
+        voice_label="မြန်မာမ ၂",
         mp3_path="out.mp3",
         srt_path="out.srt",
         created_at=datetime.now(timezone.utc).isoformat(),
@@ -138,3 +138,5 @@ def test_admin_remember_state_only_saves_for_admin_when_checked():
     assert remember_admin_payload(is_admin=False, remember=True) == {}
     assert should_restore_admin({"admin_remembered": True})
     assert not should_restore_admin({})
+
+

@@ -42,7 +42,7 @@ def test_record_job_and_list_users(tmp_path):
         db_path,
         user_id=user["user_id"],
         input_chars=42,
-        voice_label="James Velvet MM-02 (Female)",
+        voice_label="မြန်မာမ ၂",
         mp3_path="outputs/test.mp3",
         srt_path="outputs/test.srt",
         created_at=datetime.now(timezone.utc).isoformat(),
@@ -51,3 +51,5 @@ def test_record_job_and_list_users(tmp_path):
     rows = list_users(db_path)
     assert rows[0]["user_id"] == user["user_id"]
     assert rows[0]["job_count"] == 1
+
+
