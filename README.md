@@ -19,7 +19,6 @@ Public Gradio web tool for James Audio & SRT Generator.
 - Free marketing tool
 - PIN login for VIP/VVIP users
 - Admin panel
-- Telegram bot webhook routes
 - Myanmar/English TTS + MP3/SRT export
 
 ## Runtime
