@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
 
 import gradio as gr
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+
+src_path = Path(__file__).resolve().parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
 from james_web_tool.config import default_db_path
 from james_web_tool.database import init_db
@@ -14,6 +20,7 @@ from james_web_tool.ui import build_app
 
 
 fastapi_app = FastAPI()
+os.environ.setdefault("JAMES_WEB_DATA_DIR", str(Path(__file__).resolve().parent / "web_data"))
 demo = build_app().queue()
 
 

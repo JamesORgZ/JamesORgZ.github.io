@@ -1,3 +1,38 @@
+---
+title: James Audio SRT Generator
+emoji: 🎙️
+colorFrom: purple
+colorTo: yellow
+sdk: gradio
+sdk_version: 4.44.1
+app_file: app.py
+pinned: false
+---
+
+# James Audio & SRT Generator
+
+Public Gradio web tool for James Audio & SRT Generator.
+
+## Web features
+
+- Free marketing tool
+- PIN login for VIP/VVIP users
+- Admin panel
+- Telegram bot webhook routes
+- Myanmar/English TTS + MP3/SRT export
+
+## Runtime
+
+The app starts from `app.py`.
+
+Required secrets for Telegram webhook:
+
+- `JAMES_TELEGRAM_BOT_TOKEN`
+- `JAMES_TELEGRAM_ADMIN_ID`
+- `JAMES_TELEGRAM_WEBHOOK_SECRET`
+
+---
+
 # James SRT Studio
 
 Windows desktop tool for converting audio/video files into `.srt` subtitle files.
