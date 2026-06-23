@@ -121,7 +121,7 @@ def build_app() -> gr.Blocks:
     output_dir = default_output_dir()
     init_db(db_path)
 
-    with gr.Blocks(title=APP_NAME) as app:
+    with gr.Blocks(title=APP_NAME, css=CSS) as app:
         session_user_id = gr.State("")
         session_is_admin = gr.State(False)
         admin_memory = browser_state_or_session_state({})
@@ -464,7 +464,7 @@ def build_app() -> gr.Blocks:
 
 
 def main() -> None:
-    build_app().queue().launch(css=CSS, **launch_kwargs_from_env())
+    build_app().queue().launch(**launch_kwargs_from_env())
 
 
 def launch_kwargs_from_env() -> dict[str, int | str]:

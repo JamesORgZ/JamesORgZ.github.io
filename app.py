@@ -10,11 +10,11 @@ if str(src_path) not in sys.path:
 
 os.environ.setdefault("JAMES_WEB_DATA_DIR", str(Path(__file__).resolve().parent / "web_data"))
 
-from james_web_tool.ui import CSS, build_app, launch_kwargs_from_env
+from james_web_tool.ui import build_app, launch_kwargs_from_env
 
 
 demo = build_app().queue()
 
 
 if __name__ == "__main__":
-    demo.launch(css=CSS, **launch_kwargs_from_env())
+    demo.launch(**launch_kwargs_from_env())
