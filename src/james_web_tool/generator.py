@@ -109,7 +109,7 @@ def generate_for_user(
     clean_text = apply_pronunciation_rules(text.strip(), pronunciation_rules)
     if not clean_text:
         raise ValueError("Text is empty.")
-    user = get_user_by_id(db_path, user_id)
+    user = {"user_id": "ADMIN", "plan_tier": PlanTier.LIFETIME.value} if user_id == "ADMIN" else get_user_by_id(db_path, user_id)
     if user is None:
         raise ValueError("User not found.")
     if engine == "Gemini API (Key Required)" and not api_key.strip():

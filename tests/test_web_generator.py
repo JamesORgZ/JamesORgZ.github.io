@@ -49,6 +49,27 @@ def test_generate_for_user_writes_mp3_srt_and_records_job(tmp_path):
     assert list_users(db_path)[0]["job_count"] == 1
 
 
+def test_admin_can_generate_without_database_user(tmp_path):
+    db_path = tmp_path / "app.sqlite3"
+    output_dir = tmp_path / "outputs"
+    init_db(db_path)
+
+    result = generate_for_user(
+        db_path=db_path,
+        output_dir=output_dir,
+        user_id="ADMIN",
+        text="မင်္ဂလာပါ။",
+        voice_label="မြန်မာမ ၂",
+        srt_format="YouTube",
+        file_name="admin_output",
+        pronunciation_rules="မင်္ဂလာပါ => မင်္ဂလာပါ",
+        tts_func=fake_tts,
+    )
+
+    assert result.mp3_path.exists()
+    assert result.srt_path.exists()
+
+
 def test_generate_for_user_applies_pronunciation_rules_and_rate(tmp_path):
     db_path = tmp_path / "app.sqlite3"
     output_dir = tmp_path / "outputs"

@@ -428,7 +428,7 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
             rate_value: int | float,
             volume_value: int | float,
         ):
-            if not user_id or user_id == "ADMIN":
+            if not user_id:
                 raise gr.Error("User login required.")
             result = generate_for_user(
                 db_path,

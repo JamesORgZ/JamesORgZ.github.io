@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 from james_web_tool.ui import build_app
 from james_web_tool import ui
@@ -170,3 +171,44 @@ def test_login_handler_display_includes_remaining_days(tmp_path, monkeypatch):
 
     assert "VIP" in outputs[3]
     assert "ကျန်ရက်:" in outputs[3]
+
+
+def test_admin_can_use_generator_without_user_pin(tmp_path, monkeypatch):
+    monkeypatch.setenv("JAMES_WEB_DATA_DIR", str(tmp_path))
+    calls = {}
+
+    def fake_generate_for_user(db_path, output_dir, user_id, text, voice_label, srt_format, file_name, **kwargs):
+        calls["user_id"] = user_id
+        calls["text"] = text
+        mp3_path = tmp_path / "admin.mp3"
+        srt_path = tmp_path / "admin.srt"
+        mp3_path.write_bytes(b"mp3")
+        srt_path.write_text("srt", encoding="utf-8")
+        return SimpleNamespace(mp3_path=mp3_path, srt_path=srt_path, message="ok")
+
+    monkeypatch.setattr(ui, "generate_for_user", fake_generate_for_user)
+    app = build_app()
+    generate_dependency = next(
+        dep
+        for dep in app.fns.values()
+        if getattr(dep.fn, "__name__", "") == "do_generate"
+    )
+
+    outputs = generate_dependency.fn(
+        "ADMIN",
+        "မင်္ဂလာပါ။",
+        "Free Edge TTS",
+        "",
+        "Gemini 3.1 Flash",
+        "",
+        "admin_output",
+        "မြန်မာကျား ၁",
+        "Movie Recap",
+        "Single Line",
+        0,
+        40,
+        10,
+    )
+
+    assert calls["user_id"] == "ADMIN"
+    assert outputs[0] == "ok"
