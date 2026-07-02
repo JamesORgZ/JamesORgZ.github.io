@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 APP_NAME = "James Audio & Srt Generator"
-DEFAULT_ADMIN_PIN = os.getenv("JAMES_WEB_ADMIN_PIN", "556945")
+DEFAULT_ADMIN_PIN = os.getenv("JAMES_WEB_ADMIN_PIN", "067998")
 DEFAULT_LOGO_PATH = Path(r"C:\Users\James\Downloads\Telegram Desktop\photo_2026-06-22_18-57-59.jpg")
 
 
