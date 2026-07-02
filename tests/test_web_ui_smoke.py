@@ -21,7 +21,7 @@ def test_generator_contains_premium_tts_controls(tmp_path, monkeypatch):
     labels = {getattr(component, "label", None) for component in app.blocks.values()}
 
     assert "TTS Engine" in labels
-    assert "Gemini API Key" in labels
+    assert "API Key (Gemini / ElevenLabs)" in labels
     assert "Gemini Model" in labels
     assert "Pronunciation Rules (အသံထွက်ပြင်ဆင်ရန်)" in labels
     assert "သိမ်းမယ့်ဖိုင် နာမည် (File Name)" in labels

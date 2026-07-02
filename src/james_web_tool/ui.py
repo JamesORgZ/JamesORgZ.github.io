@@ -12,7 +12,7 @@ import base64
 from .config import APP_NAME, default_db_path, default_logo_path, default_output_dir
 from .database import create_user, get_user_by_pin, init_db, list_users, search_users
 from .generator import generate_for_user, generate_voice_preview
-from .models import PlanGrant, PlanTier, edge_voice_options, emotion_options, gemini_voice_options, voice_display_options
+from .models import PlanGrant, PlanTier, edge_voice_options, elevenlabs_voice_options, emotion_options, gemini_voice_options, voice_display_options
 
 CSS = """
 .gradio-container { background: #050508 !important; color: #f7f2ff !important; }
@@ -141,6 +141,13 @@ def voice_dropdown_for_engine(engine: str):
             value="ကြယ်နု ၁",
             label="[V1] Voice (Gemini)",
         )
+    if engine == "ElevenLabs API (Key Required)":
+        voices = elevenlabs_voice_options()
+        return gr.update(
+            choices=list(voices.keys()),
+            value="အေးချမ်းမ ၁",
+            label="[V1] Voice (ElevenLabs)",
+        )
     voices = edge_voice_options()
     return gr.update(
         choices=list(voices.keys()),
@@ -215,12 +222,12 @@ VIP/Lifetime ဝင်ထားရင် workflow ပိုမြန်ပြီ
                     gr.Markdown("### 🎙️ Myanmar Multi-Speaker TTS & SRT Generator")
                     with gr.Row():
                         tts_engine = gr.Radio(
-                            choices=["Free Edge TTS", "Gemini API (Key Required)"],
+                            choices=["Free Edge TTS", "Gemini API (Key Required)", "ElevenLabs API (Key Required)"],
                             value="Free Edge TTS",
                             label="TTS Engine",
                         )
                         api_key = gr.Textbox(
-                            label="Gemini API Key",
+                            label="API Key (Gemini / ElevenLabs)",
                             type="password",
                             placeholder="Enter your API Key...",
                         )

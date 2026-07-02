@@ -11,7 +11,7 @@ import wave
 from james_srt_studio.text_aligner import media_duration_seconds
 from james_srt_studio.tts_generator import synthesize_and_measure
 
-from .models import edge_voice_options, gemini_voice_options, voice_display_options
+from .models import edge_voice_options, elevenlabs_voice_options, gemini_voice_options, voice_display_options
 
 GEMINI_MODEL_IDS = {
     "Gemini 3.1 Flash": "gemini-3.1-flash-tts-preview",
@@ -37,6 +37,13 @@ def gemini_voice_id_for_label(label: str) -> str:
     voices = gemini_voice_options()
     if label not in voices:
         return voices["ကြယ်နု ၁"]
+    return voices[label]
+
+
+def elevenlabs_voice_id_for_label(label: str) -> str:
+    voices = elevenlabs_voice_options()
+    if label not in voices:
+        return voices["အေးချမ်းမ ၁"]
     return voices[label]
 
 
@@ -129,6 +136,50 @@ def generate_gemini_mp3(
     wav_path.unlink(missing_ok=True)
     if not mp3_path.exists() or mp3_path.stat().st_size == 0:
         raise RuntimeError("Gemini TTS failed to create MP3 output.")
+    return media_duration_seconds(mp3_path)
+
+
+def generate_elevenlabs_mp3(
+    text: str,
+    mp3_path: Path,
+    voice_id: str,
+    api_key: str,
+    emotion: str,
+    model_id: str = "eleven_multilingual_v2",
+) -> float:
+    mp3_path.parent.mkdir(parents=True, exist_ok=True)
+    body = {
+        "text": emotion_prompt(text, emotion),
+        "model_id": model_id,
+        "voice_settings": {
+            "stability": 0.45,
+            "similarity_boost": 0.75,
+            "style": 0.25,
+            "use_speaker_boost": True,
+        },
+    }
+    request = urllib.request.Request(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128",
+        data=json.dumps(body).encode("utf-8"),
+        headers={
+            "xi-api-key": api_key,
+            "Content-Type": "application/json",
+            "Accept": "audio/mpeg",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            audio = response.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(f"ElevenLabs TTS request failed: {exc.code} {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"ElevenLabs TTS request failed: {exc.reason}") from exc
+
+    mp3_path.write_bytes(audio)
+    if not mp3_path.exists() or mp3_path.stat().st_size == 0:
+        raise RuntimeError("ElevenLabs TTS failed to create MP3 output.")
     return media_duration_seconds(mp3_path)
 
 

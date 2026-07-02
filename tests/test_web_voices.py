@@ -1,4 +1,4 @@
-from james_web_tool.models import edge_voice_options, emotion_options, gemini_voice_options, voice_display_options
+from james_web_tool.models import edge_voice_options, elevenlabs_voice_options, emotion_options, gemini_voice_options, voice_display_options
 
 
 def test_voice_options_include_sample_tool_v1_names():
@@ -34,6 +34,13 @@ def test_edge_voice_options_do_not_include_gemini_only_voices():
 
     assert "မြန်မာကျား ၁" in voices
     assert "ကြယ်နု ၁" not in voices
+
+
+def test_elevenlabs_voice_options_include_myanmar_display_names():
+    voices = elevenlabs_voice_options()
+
+    assert voices["အေးချမ်းမ ၁"] == "21m00Tcm4TlvDq8ikWAM"
+    assert "တည်ငြိမ်ကျား ၅" in voices
 
 
 def test_old_sample_tool_voice_names_are_not_displayed():

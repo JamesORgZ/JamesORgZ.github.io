@@ -109,6 +109,19 @@ def gemini_voice_options() -> dict[str, str]:
     }
 
 
+def elevenlabs_voice_options() -> dict[str, str]:
+    return {
+        "အေးချမ်းမ ၁": "21m00Tcm4TlvDq8ikWAM",
+        "သဘာဝကျား ၂": "29vD33N1CtxCmqQRPOHJ",
+        "နွေးထွေးမ ၃": "EXAVITQu4vr4xnSDxMaL",
+        "ကြည်လင်မ ၄": "AZnzlk1XvdvUeBnXmlld",
+        "တည်ငြိမ်ကျား ၅": "pNInz6obpgDQGcFmaJgB",
+        "အားမာန်ကျား ၆": "ErXwobaYiN019PkySvjV",
+        "နူးညံ့ကျား ၇": "VR6AewLTigWG4xSOukaG",
+        "ပေါ့ပါးမ ၈": "MF3mGyEYCl7XYWbV9V6O",
+    }
+
+
 def emotion_options() -> list[str]:
     return [
         "Movie Recap (ဇာတ်လမ်းပြော)",
@@ -125,5 +138,5 @@ def emotion_options() -> list[str]:
 
 
 def voice_display_options() -> dict[str, str]:
-    return edge_voice_options() | gemini_voice_options()
+    return edge_voice_options() | gemini_voice_options() | elevenlabs_voice_options()
 

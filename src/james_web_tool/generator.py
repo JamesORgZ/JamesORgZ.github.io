@@ -11,14 +11,17 @@ from .database import get_user_by_id, record_job
 from .models import GenerationResult, PlanTier
 from .tts import (
     edge_voice_id_for_label,
+    elevenlabs_voice_id_for_label,
     gemini_model_id_for_label,
     gemini_voice_id_for_label,
+    generate_elevenlabs_mp3,
     generate_gemini_mp3,
     generate_mp3,
 )
 
 TtsFunc = Callable[[str, Path, str, str], float]
 GeminiTtsFunc = Callable[[str, Path, str, str, str, str], float]
+ElevenLabsTtsFunc = Callable[[str, Path, str, str, str], float]
 
 
 def safe_file_stem(file_name: str) -> str:
@@ -105,6 +108,7 @@ def generate_for_user(
     gemini_model: str = "Gemini 3.1 Flash",
     tts_func: TtsFunc = generate_mp3,
     gemini_tts_func: GeminiTtsFunc = generate_gemini_mp3,
+    elevenlabs_tts_func: ElevenLabsTtsFunc = generate_elevenlabs_mp3,
 ) -> GenerationResult:
     clean_text = apply_pronunciation_rules(text.strip(), pronunciation_rules)
     if not clean_text:
@@ -114,6 +118,8 @@ def generate_for_user(
         raise ValueError("User not found.")
     if engine == "Gemini API (Key Required)" and not api_key.strip():
         raise ValueError("Gemini API Key required for Gemini engine.")
+    if engine == "ElevenLabs API (Key Required)" and not api_key.strip():
+        raise ValueError("ElevenLabs API Key required for ElevenLabs engine.")
     enforce_plan_limits(user_plan_tier(user), clean_text, srt_format, pronunciation_rules)
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -129,6 +135,15 @@ def generate_for_user(
             mp3_path,
             voice_id,
             gemini_model_id_for_label(gemini_model),
+            api_key.strip(),
+            emotion,
+        )
+    elif engine == "ElevenLabs API (Key Required)":
+        voice_id = elevenlabs_voice_id_for_label(voice_label)
+        duration = elevenlabs_tts_func(
+            clean_text,
+            mp3_path,
+            voice_id,
             api_key.strip(),
             emotion,
         )
@@ -163,6 +178,7 @@ def generate_voice_preview(
     gemini_model: str,
     tts_func: TtsFunc = generate_mp3,
     gemini_tts_func: GeminiTtsFunc = generate_gemini_mp3,
+    elevenlabs_tts_func: ElevenLabsTtsFunc = generate_elevenlabs_mp3,
 ) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
@@ -176,6 +192,16 @@ def generate_voice_preview(
             mp3_path,
             gemini_voice_id_for_label(voice_label),
             gemini_model_id_for_label(gemini_model),
+            api_key.strip(),
+            emotion,
+        )
+    elif engine == "ElevenLabs API (Key Required)":
+        if not api_key.strip():
+            raise ValueError("ElevenLabs API Key required for ElevenLabs voice preview.")
+        elevenlabs_tts_func(
+            voice_preview_text(voice_label),
+            mp3_path,
+            elevenlabs_voice_id_for_label(voice_label),
             api_key.strip(),
             emotion,
         )
